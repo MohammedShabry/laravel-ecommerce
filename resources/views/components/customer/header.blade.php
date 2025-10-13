@@ -68,7 +68,7 @@
             <div class="container">
                 <div class="header-wrap">
                     <div class="logo logo-width-1">
-                        <a href="{{ url('/') }}"><img src="{{ asset('assets/imgs/theme/logo.svg') }}" alt="logo" /></a>
+                        <a href="{{ route('customer.home') }}"><img src="{{ asset('assets/imgs/theme/logo.svg') }}" alt="logo" /></a>
                     </div>
                     <div class="header-right">
                         <div class="search-style-2">
