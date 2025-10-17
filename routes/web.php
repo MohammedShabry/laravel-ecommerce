@@ -27,6 +27,18 @@ Route::post('/register', [RegisteredUserController::class,'store'])->name('regis
 
 Route::middleware(['auth','role:admin'])->group(function(){
     Route::get('/admin/dashboard',[AdminDashboardController::class,'dashboard'])->name('admin.dashboard');
+    Route::view('/admin/productslist', 'admin.productslist')->name('admin.productslist');
+    Route::view('/admin/categories', 'admin.categories')->name('admin.categories');
+    Route::view('/admin/orderlist', 'admin.orderlist')->name('admin.orderlist');
+    Route::view('/admin/orderdetail', 'admin.orderdetail')->name('admin.orderdetail');
+    Route::view('/admin/sellerlist', 'admin.sellerlist')->name('admin.sellerlist');
+    Route::view('/admin/sellerdetail', 'admin.sellerdetails')->name('admin.sellerdetail');
+    Route::view('/admin/addproduct', 'admin.addproduct')->name('admin.addproduct');
+    Route::view('/admin/transactions', 'admin.transactions')->name('admin.transactions');
+    Route::view('/admin/reviews', 'admin.reviews')->name('admin.reviews');
+    Route::view('/admin/brands', 'admin.brands')->name('admin.brands');
+    Route::view('/admin/customerslist', 'admin.customerslist')->name('admin.customerslist');
+    Route::view('/admin/adminsetting', 'admin.setting')->name('admin.settings');
 });
 Route::middleware(['auth','role:seller'])->group(function(){
     Route::get('/seller/dashboard',[SellerDashboardController::class,'dashboard'])->name('seller.dashboard');
