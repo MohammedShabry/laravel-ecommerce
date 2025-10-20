@@ -40,6 +40,7 @@
                         </a>
                         <div class="submenu {{ request()->is('admin/seller*') ? 'show' : '' }}">
                             <a class="{{ request()->is('admin/sellerlist*') ? 'active' : '' }}" href="{{ url('/admin/sellerlist') }}">Sellers list</a>
+                            <a class="{{ request()->is('admin/sellerrequests*') ? 'active' : '' }}" href="{{ url('/admin/sellerrequests') }}">Seller Requests</a>
                             <a class="{{ request()->is('admin/seller-commission*') ? 'active' : '' }}" href="page-seller-detail.html">Seller commition</a>
                         </div>
                     </li>

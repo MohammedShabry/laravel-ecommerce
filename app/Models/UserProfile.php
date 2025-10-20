@@ -16,12 +16,22 @@ class UserProfile extends Model
         'user_id',
         'profile_image',
         'birthdate',
-        'address_line1',
-        'address_line2',
-        'city',
-        'state',
         'country',
-        'postal_code',
+        'address_street',
+        'address_city',
+        'address_state',
+        'address_postal',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string,string>
+     */
+    protected $casts = [
+        'birthdate' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**

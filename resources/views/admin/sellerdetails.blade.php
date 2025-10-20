@@ -17,8 +17,17 @@
                             </div>
                             <!--  col.// -->
                             <div class="col-xl col-lg">
-                                <h3>Noodles Co.</h3>
-                                <p>3891 Ranchview Dr. Richardson, California 62639</p>
+                                <h3>{{ $seller->store_name ?? ($seller->user->name ?? 'Seller') }}</h3>
+                                <p>
+                                    @php
+                                        $parts = [];
+                                        if (!empty($seller->address_street)) $parts[] = $seller->address_street;
+                                        if (!empty($seller->address_city)) $parts[] = $seller->address_city;
+                                        if (!empty($seller->address_state)) $parts[] = $seller->address_state;
+                                        if (!empty($seller->address_postal)) $parts[] = $seller->address_postal;
+                                    @endphp
+                                    {{ $parts ? implode(', ', $parts) : 'Address not provided' }}
+                                </p>
                             </div>
                             <!--  col.// -->
                             <div class="col-xl-4 text-md-end">
@@ -28,7 +37,7 @@
                                     <option>Analyze</option>
                                     <option>Something</option>
                                 </select>
-                                <a href="#" class="btn btn-primary"> View live <i class="material-icons md-launch"></i> </a>
+                                <a href="{{ route('admin.sellerrequests') }}?seller={{ $seller->id }}" class="btn btn-primary"> View KYC </a>
                             </div>
                             <!--  col.// -->
                         </div>
@@ -47,28 +56,28 @@
                             <div class="col-sm-6 col-lg-4 col-xl-3">
                                 <h6>Contacts</h6>
                                 <p>
-                                    Manager: Jerome Bell <br />
-                                    info@example.com <br />
-                                    (229) 555-0109, (808) 555-0111
+                                    Manager: {{ $seller->user->name ?? 'Manager not provided' }} <br />
+                                    {{ $seller->user->email ?? 'Email not provided' }} <br />
+                                    {{ $seller->user->phone ?? 'Phone not provided' }}
                                 </p>
                             </div>
                             <!--  col.// -->
                             <div class="col-sm-6 col-lg-4 col-xl-3">
                                 <h6>Address</h6>
                                 <p>
-                                    Country: California <br />
-                                    Address: Ranchview Dr. Richardson <br />
-                                    Postal code: 62639
+                                    Country: {{ $seller->country ?? 'Country not provided' }} <br />
+                                    @php
+                                        $addrParts = [];
+                                        if (!empty($seller->address_street)) $addrParts[] = $seller->address_street;
+                                        if (!empty($seller->address_city)) $addrParts[] = $seller->address_city;
+                                        if (!empty($seller->address_state)) $addrParts[] = $seller->address_state;
+                                    @endphp
+                                    Address: {{ $addrParts ? implode(', ', $addrParts) : 'Address not provided' }} <br />
+                                    Postal code: {{ $seller->address_postal ?? 'N/A' }}
                                 </p>
                             </div>
                             <!--  col.// -->
-                            <div class="col-sm-6 col-xl-4 text-xl-end">
-                                <map class="mapbox position-relative d-inline-block">
-                                    <img src="{{ asset('assetsbackend/imgs/misc/map.jpg') }}" class="rounded2" height="120" alt="map" />
-                                    <span class="map-pin" style="top: 50px; left: 100px"></span>
-                                    <button class="btn btn-sm btn-brand position-absolute bottom-0 end-0 mb-15 mr-15 font-xs">Large</button>
-                                </map>
-                            </div>
+                            <!-- map removed as requested -->
                             <!--  col.// -->
                         </div>
                         <!--  row.// -->

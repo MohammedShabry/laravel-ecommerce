@@ -16,15 +16,27 @@ class KycController extends Controller
         $user = Auth::user();
 
         $request->validate([
+            'shop_name' => ['required','string','max:255'],
+            'business_type' => ['nullable','string','max:255'],
+            'business_description' => ['nullable','string'],
+            'business_registration_number' => ['nullable','string','max:255'],
+
+            'address_street' => ['nullable','string','max:255'],
+            'address_city' => ['nullable','string','max:255'],
+            'address_state' => ['nullable','string','max:255'],
+            'address_postal' => ['nullable','string','max:100'],
+
             'national_id_number' => ['required','string','max:255'],
             'bank_name' => ['required','string','max:255'],
             'account_holder_name' => ['required','string','max:255'],
             'account_number' => ['required','string','max:100'],
             'branch_name' => ['nullable','string','max:255'],
-            'bank_code' => ['nullable','string','max:100'],
+            // 'bank_code' removed
+
             'id_proof_front' => ['required','file'],
             'id_proof_back' => ['nullable','file'],
-            'business_registration_number' => ['nullable','string','max:255'],
+            'additional_doc' => ['nullable','file'],
+
             'terms_agreed' => ['accepted'],
         ]);
 
@@ -49,15 +61,31 @@ class KycController extends Controller
 
         // prepare data for create/update without overwriting file fields with null
         $kycData = [
+            // link explicitly to user and seller profile so checks can find the record
+            'user_id' => $user->id,
+            'seller_id' => $sellerProfile->id,
+
+            // Business Info
+            'shop_name' => $request->input('shop_name'),
+            'business_type' => $request->input('business_type'),
+            'business_description' => $request->input('business_description'),
+            'business_registration_number' => $request->input('business_registration_number'),
+
+            // Address
+            'address_street' => $request->input('address_street'),
+            'address_city' => $request->input('address_city'),
+            'address_state' => $request->input('address_state'),
+            'address_postal' => $request->input('address_postal'),
+
+            // Bank & ID
             'bank_name' => $request->input('bank_name'),
             'account_holder_name' => $request->input('account_holder_name'),
             'account_number' => $request->input('account_number'),
             'branch_name' => $request->input('branch_name'),
-            'bank_code' => $request->input('bank_code'),
             'national_id_number' => $request->input('national_id_number'),
+
             'terms_agreed' => (bool) $request->has('terms_agreed'),
             'verification_status' => 'pending',
-            'business_registration_number' => $request->input('business_registration_number'),
             'submitted_at' => now(),
         ];
 
@@ -88,11 +116,23 @@ class KycController extends Controller
             $kycData['id_proof_back'] = $existing->id_proof_back;
         }
 
+        // optional additional_doc
+        if ($request->hasFile('additional_doc')) {
+            $newDoc = $upload($request->file('additional_doc'));
+            if ($existing && $existing->additional_doc) {
+                Storage::disk('public')->delete($existing->additional_doc);
+            }
+            $kycData['additional_doc'] = $newDoc;
+        } elseif ($existing) {
+            $kycData['additional_doc'] = $existing->additional_doc;
+        }
+
         $kyc = SellerKyc::updateOrCreate(
             ['seller_id' => $sellerProfile->id],
             $kycData
         );
 
-        return redirect()->route('seller.dashboard')->with('status', 'KYC submitted and is under review');
+        // After submission we keep the seller on the KYC page until an admin approves their documents.
+        return redirect()->route('seller.kyc')->with('status', 'KYC submitted and is under review');
     }
 }

@@ -6,258 +6,91 @@
 
                 <div class="content-header">
                     <h2 class="content-title">Sellers list</h2>
-                    <div>
-                        <a href="#" class="btn btn-primary"><i class="material-icons md-plus"></i> Create new</a>
-                    </div>
                 </div>
                 <div class="card mb-4">
                     <header class="card-header">
                         <div class="row gx-3">
                             <div class="col-lg-4 col-md-6 me-auto">
-                                <input type="text" placeholder="Search..." class="form-control" />
-                            </div>
-                            <div class="col-lg-2 col-md-3 col-6">
-                                <select class="form-select">
-                                    <option>Status</option>
-                                    <option>Active</option>
-                                    <option>Disabled</option>
-                                    <option>Show all</option>
-                                </select>
-                            </div>
-                            <div class="col-lg-2 col-md-3 col-6">
-                                <select class="form-select">
-                                    <option>Show 20</option>
-                                    <option>Show 30</option>
-                                    <option>Show 40</option>
-                                </select>
+                                <!-- optional header controls could go here -->
                             </div>
                         </div>
                     </header>
-                    <!-- card-header end// -->
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
                                         <th>Seller</th>
+                                        <th>Store Name</th>
                                         <th>Email</th>
+                                        <th>Phone</th>
                                         <th>Status</th>
-                                        <th>Registered</th>
-                                        <th class="text-end">Action</th>
+                                        <th class="text-end">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-1.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Eleanor Pena</h6>
-                                                    <small class="text-muted">Seller ID: #439</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>eleanor2020@example.com</td>
-                                        <td><span class="badge rounded-pill alert-success">Active</span></td>
-                                        <td>08.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/sellerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-2.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Mary Monasa</h6>
-                                                    <small class="text-muted">Seller ID: #129</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>monalisa@example.com</td>
-                                        <td><span class="badge rounded-pill alert-success">Active</span></td>
-                                        <td>11.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/sellerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-3.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Jonatan Ive</h6>
-                                                    <small class="text-muted">Seller ID: #400</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>mrjohn@example.com</td>
-                                        <td><span class="badge rounded-pill alert-success">Active</span></td>
-                                        <td>08.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/sellerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-4.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Eleanor Pena</h6>
-                                                    <small class="text-muted">Seller ID: #439</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>eleanor2020@example.com</td>
-                                        <td><span class="badge rounded-pill alert-danger">Inactive</span></td>
-                                        <td>08.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/sellerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-1.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Albert Pushkin</h6>
-                                                    <small class="text-muted">Seller ID: #439</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>someone@mymail.com</td>
-                                        <td><span class="badge rounded-pill alert-success">Active</span></td>
-                                        <td>20.11.2019</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/sellerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-2.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Alexandra Pena</h6>
-                                                    <small class="text-muted">Seller ID: #439</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>eleanor2020@example.com</td>
-                                        <td><span class="badge rounded-pill alert-danger">Inactive</span></td>
-                                        <td>08.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/sellerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-3.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Eleanor Pena</h6>
-                                                    <small class="text-muted">Seller ID: #439</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>eleanor2020@example.com</td>
-                                        <td><span class="badge rounded-pill alert-danger">Inactive</span></td>
-                                        <td>08.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/sellerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-4.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Alex Pushkina</h6>
-                                                    <small class="text-muted">Seller ID: #439</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>alex@gmail.org</td>
-                                        <td><span class="badge rounded-pill alert-success">Active</span></td>
-                                        <td>08.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/sellerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-1.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Eleanor Pena</h6>
-                                                    <small class="text-muted">Seller ID: #439</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>eleanor2020@example.com</td>
-                                        <td><span class="badge rounded-pill alert-success">Active</span></td>
-                                        <td>08.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/sellerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-2.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Eleanor Pena</h6>
-                                                    <small class="text-muted">Seller ID: #439</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>eleanor2020@example.com</td>
-                                        <td><span class="badge rounded-pill alert-success">Active</span></td>
-                                        <td>08.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/sellerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
+                                    @php
+                                        // Ensure we have a collection to filter. If a paginator is passed, use its collection.
+                                        $sellersCollection = $sellers ?? collect();
+                                        if (method_exists($sellersCollection, 'getCollection')) {
+                                            // It's a LengthAwarePaginator or Paginator
+                                            $sellersCollection = $sellersCollection->getCollection();
+                                        }
+                                        // Filter only active sellers (case-insensitive). Use `verification_status` column.
+                                        $activeSellers = $sellersCollection->filter(function($seller) {
+                                            return isset($seller->verification_status) && strcasecmp($seller->verification_status, 'active') === 0;
+                                        });
+                                    @endphp
+
+                                    @forelse($activeSellers as $seller)
+                                        @php $user = $seller->user ?? null; @endphp
+                                        <tr>
+                                            <td width="30%">
+                                                <a href="#" class="itemside">
+                                                    <div class="left">
+                                                        <img src="{{ asset($user->avatar ?? 'assetsbackend/imgs/people/avatar-1.png') }}" class="img-sm img-avatar" alt="Userpic" />
+                                                    </div>
+                                                    <div class="info pl-3">
+                                                        <h6 class="mb-0 title">{{ $user->name ?? 'Seller' }}</h6>
+                                                    </div>
+                                                </a>
+                                            </td>
+                                            <td>{{ $seller->store_name ?? '-' }}</td>
+                                            <td>{{ $user->email ?? '-' }}</td>
+                                            <td>{{ $user->phone ?? '-' }}</td>
+                                            <td>
+                                                @php $status = strtolower($seller->verification_status ?? ''); @endphp
+                                                @if($status === 'active')
+                                                    <span class="badge rounded-pill alert-success text-dark">Active</span>
+                                                @elseif($status === 'pending')
+                                                    <span class="badge rounded-pill alert-warning text-dark">Pending</span>
+                                                @elseif($status === 'rejected')
+                                                    <span class="badge rounded-pill alert-danger text-white">Rejected</span>
+                                                @else
+                                                    <span class="badge rounded-pill alert-secondary text-dark">{{ ucfirst($seller->verification_status ?? 'Unknown') }}</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-end">
+                                                <a href="{{ route('admin.sellerdetail', ['seller' => $seller->id]) }}" class="btn btn-sm btn-brand rounded font-sm mt-8">View</a>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="6">No active sellers found.</td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
-                            <!-- table-responsive.// -->
                         </div>
+                        <!-- pagination -->
+                        @if(method_exists($sellers, 'links'))
+                            <div class="mt-3">
+                                {{ $sellers->links() }}
+                            </div>
+                        @endif
                     </div>
                     <!-- card-body end// -->
                 </div>
                 <!-- card end// -->
-                <div class="pagination-area mt-15 mb-50">
-                    <nav aria-label="Page navigation example">
-                        <ul class="pagination justify-content-start">
-                            <li class="page-item active"><a class="page-link" href="#">01</a></li>
-                            <li class="page-item"><a class="page-link" href="#">02</a></li>
-                            <li class="page-item"><a class="page-link" href="#">03</a></li>
-                            <li class="page-item"><a class="page-link dot" href="#">...</a></li>
-                            <li class="page-item"><a class="page-link" href="#">16</a></li>
-                            <li class="page-item">
-                                <a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
 
 @endsection

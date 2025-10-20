@@ -18,13 +18,13 @@ return new class extends Migration
             $table->string('store_logo')->nullable();
             $table->string('store_banner')->nullable();
             $table->text('store_description')->nullable();
-            $table->string('address_line1')->nullable();
-            $table->string('city')->nullable();
-            $table->string('state')->nullable();
             $table->string('country')->nullable();
-            $table->string('postal_code')->nullable();
+            $table->string('address_street')->nullable();
+            $table->string('address_city')->nullable();
+            $table->string('address_state')->nullable();
+            $table->string('address_postal')->nullable();
             $table->text('birthdate')->nullable();
-            $table->string('status')->default('pending'); // pending/active/inactive
+            $table->enum('verification_status', ['pending', 'active', 'inactive'])->default('pending');// pending/active/inactive
             $table->timestamps();
         });
 

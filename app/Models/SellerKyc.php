@@ -17,15 +17,23 @@ class SellerKyc extends Model
      */
     protected $fillable = [
         'seller_id',
+        'user_id', // added: link directly to users table
+        'shop_name',
+        'business_type',
+        'business_description',
         'business_registration_number',
+        'address_street',
+        'address_city',
+        'address_state',
+        'address_postal',
         'bank_name',
         'account_holder_name',
         'account_number',
         'branch_name',
-        'bank_code',
         'national_id_number',
         'id_proof_front',
         'id_proof_back',
+        'additional_doc',
         'terms_agreed',
         'verification_status',
         'submitted_at',
@@ -48,5 +56,13 @@ class SellerKyc extends Model
     public function seller(): BelongsTo
     {
         return $this->belongsTo(SellerProfile::class, 'seller_id');
+    }
+
+    /**
+     * Get the user that owns this KYC record.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

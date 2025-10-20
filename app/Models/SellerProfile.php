@@ -19,14 +19,13 @@ class SellerProfile extends Model
         'store_logo',
         'store_banner',
         'store_description',
-        'birthdate',
-        'address_line1',
-        'city',
-        'state',
         'country',
-        'postal_code',
-        'phone',
-        'status',
+        'address_street',
+        'address_city',
+        'address_state',
+        'address_postal',
+        'birthdate',
+        'verification_status',
     ];
 
     /**
@@ -35,6 +34,7 @@ class SellerProfile extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'birthdate' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

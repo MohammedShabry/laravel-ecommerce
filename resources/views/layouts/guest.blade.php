@@ -13,6 +13,8 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- Flasher (Toastr) styles -->
+    <link rel="stylesheet" href="{{ asset('vendor/flasher/toastr.min.css') }}">
 </head>
 
 <body class="font-sans text-gray-900 antialiased">
@@ -23,5 +25,7 @@
             {{ $slot }}
         </div>
     </div>
+    {{-- Flasher render (toastr) --}}
+    @flasher_render(['presenter' => 'flasher::toast'])
 </body>
 </html>

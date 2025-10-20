@@ -16,12 +16,12 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('profile_image')->nullable();
             $table->text('birthdate')->nullable();
-            $table->string('address_line1')->nullable();
-            $table->string('address_line2')->nullable();
-            $table->string('city')->nullable();
-            $table->string('state')->nullable();
             $table->string('country')->nullable();
-            $table->string('postal_code')->nullable();
+            $table->string('address_street')->nullable();
+            $table->string('address_city')->nullable();
+            $table->string('address_state')->nullable();
+            $table->string('address_postal')->nullable();
+
             $table->timestamps();
         });
 

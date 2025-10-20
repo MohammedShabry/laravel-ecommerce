@@ -31,19 +31,34 @@ Route::middleware(['auth','role:admin'])->group(function(){
     Route::view('/admin/categories', 'admin.categories')->name('admin.categories');
     Route::view('/admin/orderlist', 'admin.orderlist')->name('admin.orderlist');
     Route::view('/admin/orderdetail', 'admin.orderdetail')->name('admin.orderdetail');
-    Route::view('/admin/sellerlist', 'admin.sellerlist')->name('admin.sellerlist');
-    Route::view('/admin/sellerdetail', 'admin.sellerdetails')->name('admin.sellerdetail');
+    Route::get('/admin/sellerlist', [\App\Http\Controllers\Admin\SellerController::class, 'index'])->name('admin.sellerlist');
+    // show a specific seller detail page (admin)
+    Route::get('/admin/sellers/{seller}', [\App\Http\Controllers\Admin\SellerController::class, 'show'])->name('admin.sellerdetail');
     Route::view('/admin/addproduct', 'admin.addproduct')->name('admin.addproduct');
     Route::view('/admin/transactions', 'admin.transactions')->name('admin.transactions');
     Route::view('/admin/reviews', 'admin.reviews')->name('admin.reviews');
     Route::view('/admin/brands', 'admin.brands')->name('admin.brands');
     Route::view('/admin/customerslist', 'admin.customerslist')->name('admin.customerslist');
     Route::view('/admin/adminsetting', 'admin.setting')->name('admin.settings');
+    Route::get('/admin/sellerrequests', [\App\Http\Controllers\Admin\SellerController::class, 'requests'])->name('admin.sellerrequests');
+    Route::post('/admin/sellers/{seller}/accept', [\App\Http\Controllers\Admin\SellerController::class, 'accept'])->name('admin.sellers.accept');
+    Route::post('/admin/sellers/{seller}/reject', [\App\Http\Controllers\Admin\SellerController::class, 'reject'])->name('admin.sellers.reject');
 });
 Route::middleware(['auth','role:seller'])->group(function(){
     Route::get('/seller/dashboard',[SellerDashboardController::class,'dashboard'])->name('seller.dashboard');
-    // POST route kept for form submission from the dashboard modal
+    // Show KYC form page (only for sellers)
+    Route::get('/seller/kyc', function () {
+        return view('seller.kycform');
+    })->name('seller.kyc');
+    // POST route kept for form submission from the KYC form
     Route::post('/seller/kyc',[SellerDashboardController::class,'submitKyc'])->name('seller.kyc.submit');
+    Route::view('/seller/productslist', 'seller.productslist')->name('seller.productslist');
+    Route::view('/seller/orderlist', 'seller.orderlist')->name('seller.orderlist');
+    Route::view('/seller/orderdetail', 'seller.orderdetail')->name('seller.orderdetail');
+    Route::view('/seller/addproduct', 'seller.addproduct')->name('seller.addproduct');
+    Route::view('/seller/transactions', 'seller.transactions')->name('seller.transactions');
+    Route::view('/seller/reviews', 'seller.reviews')->name('seller.reviews');
+
 });
 Route::middleware(['auth','role:customer'])->group(function(){
     Route::get('/customer/dashboard',[CustomerDashboardController::class,'dashboard'])->name('customer.dashboard');

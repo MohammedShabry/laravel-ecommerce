@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <title>@yield('title', 'Admin Dashboard')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- CSRF token for AJAX requests and scripts that need it -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shortcut icon" href="{{ asset('assetsbackend/imgs/theme/favicon.svg') }}" />
     <script src="{{ asset('assetsbackend/js/vendors/color-modes.js') }}"></script>
     <link href="{{ asset('assetsbackend/css/main.css?v=6.0') }}" rel="stylesheet" type="text/css" />
@@ -37,5 +39,17 @@
     <script src="{{ asset('assetsbackend/js/vendors/chart.js') }}"></script>
     <script src="{{ asset('assetsbackend/js/main.js?v=6.0') }}"></script>
     <script src="{{ asset('assetsbackend/js/custom-chart.js') }}"></script>
+    <script>
+        // Ensure jQuery AJAX includes Laravel CSRF token if jQuery is present
+        (function(){
+            var tokenMeta = document.querySelector('meta[name="csrf-token"]');
+            if (window.jQuery && tokenMeta) {
+                window.jQuery.ajaxSetup({
+                    headers: { 'X-CSRF-TOKEN': tokenMeta.getAttribute('content') }
+                });
+            }
+        })();
+    </script>
+    @stack('scripts')
 </body>
 </html>
