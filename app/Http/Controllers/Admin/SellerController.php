@@ -97,16 +97,20 @@ class SellerController extends Controller
     // reject KYC -> set verification_status = rejected and leave seller_profiles.status as pending or set to 'inactive'
     public function reject(Request $request, $sellerId)
     {
+        // support both `reason` (existing) and `rejection_reason` (AJAX flow)
         $request->validate([
             'reason' => ['nullable','string'],
+            'rejection_reason' => ['nullable','string'],
         ]);
 
         DB::transaction(function () use ($sellerId, $request) {
             $kyc = SellerKyc::where('seller_id',$sellerId)->first();
             if ($kyc) {
+                // prefer explicit rejection_reason (sent by AJAX), fallback to reason
+                $reason = $request->input('rejection_reason', $request->input('reason'));
                 $kyc->update([
                     'verification_status' => 'rejected',
-                    'rejection_reason' => $request->input('reason'),
+                    'rejection_reason' => $reason,
                 ]);
             }
             $profile = SellerProfile::find($sellerId);
@@ -115,6 +119,11 @@ class SellerController extends Controller
                 $profile->update(['verification_status' => 'pending']);
             }
         });
+
+        // If the request expects JSON (AJAX / fetch), return a JSON payload
+        if ($request->wantsJson() || $request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json(['success' => true, 'message' => 'Seller KYC rejected']);
+        }
 
         return redirect()->back()->with('status','Seller KYC rejected');
     }
