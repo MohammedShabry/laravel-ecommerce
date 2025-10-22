@@ -28,7 +28,12 @@ Route::post('/register', [RegisteredUserController::class,'store'])->name('regis
 Route::middleware(['auth','role:admin'])->group(function(){
     Route::get('/admin/dashboard',[AdminDashboardController::class,'dashboard'])->name('admin.dashboard');
     Route::view('/admin/productslist', 'admin.productslist')->name('admin.productslist');
-    Route::view('/admin/categories', 'admin.categories')->name('admin.categories');
+    Route::resource('/admin/categories', App\Http\Controllers\Admin\CategoryController::class)->names([
+        'index' => 'categories.index',
+        'store' => 'categories.store',
+        'update' => 'categories.update',
+        'destroy' => 'categories.destroy',
+    ])->only(['index', 'store', 'update', 'destroy']);
     Route::view('/admin/orderlist', 'admin.orderlist')->name('admin.orderlist');
     Route::view('/admin/orderdetail', 'admin.orderdetail')->name('admin.orderdetail');
     Route::get('/admin/sellerlist', [\App\Http\Controllers\Admin\SellerController::class, 'index'])->name('admin.sellerlist');
@@ -37,7 +42,10 @@ Route::middleware(['auth','role:admin'])->group(function(){
     Route::view('/admin/addproduct', 'admin.addproduct')->name('admin.addproduct');
     Route::view('/admin/transactions', 'admin.transactions')->name('admin.transactions');
     Route::view('/admin/reviews', 'admin.reviews')->name('admin.reviews');
-    Route::view('/admin/brands', 'admin.brands')->name('admin.brands');
+    Route::get('/admin/brands', [\App\Http\Controllers\Admin\BrandController::class, 'index'])->name('admin.brands');
+    Route::post('/admin/brands', [\App\Http\Controllers\Admin\BrandController::class, 'store'])->name('admin.brands.store');
+    Route::put('/admin/brands/{brand}', [\App\Http\Controllers\Admin\BrandController::class, 'update'])->name('admin.brands.update');
+    Route::delete('/admin/brands/{brand}', [\App\Http\Controllers\Admin\BrandController::class, 'destroy'])->name('admin.brands.destroy');
     Route::view('/admin/customerslist', 'admin.customerslist')->name('admin.customerslist');
     Route::view('/admin/adminsetting', 'admin.setting')->name('admin.settings');
     Route::get('/admin/sellerrequests', [\App\Http\Controllers\Admin\SellerController::class, 'requests'])->name('admin.sellerrequests');

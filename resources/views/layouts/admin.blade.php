@@ -9,6 +9,22 @@
     <link rel="shortcut icon" href="{{ asset('assetsbackend/imgs/theme/favicon.svg') }}" />
     <script src="{{ asset('assetsbackend/js/vendors/color-modes.js') }}"></script>
     <link href="{{ asset('assetsbackend/css/main.css?v=6.0') }}" rel="stylesheet" type="text/css" />
+    <style>
+        /* When a modal is open add this class to the root to prevent underlying
+           layout from receiving pointer events (stops hover/collapse on sidebar/header). */
+        .modal-open .main-wrap,
+        .modal-open .screen-overlay,
+        .modal-open .nav,
+        .modal-open .sidebar {
+            pointer-events: none;
+        }
+
+        /* Keep the overlay and modal dialog themselves interactive when modal-open set */
+        .modal-open .refund-modal,
+        .modal-open .refund-modal * {
+            pointer-events: auto !important;
+        }
+    </style>
 </head>
 
 <body>

@@ -20,8 +20,8 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Seller</th>
-                                        <th>Store Name</th>
+                                        <th>Store</th>
+                                        <th>Owner</th>
                                         <th>Email</th>
                                         <th>Phone</th>
                                         <th>Status</th>
@@ -51,11 +51,11 @@
                                                         <img src="{{ asset($user->avatar ?? 'assetsbackend/imgs/people/avatar-1.png') }}" class="img-sm img-avatar" alt="Userpic" />
                                                     </div>
                                                     <div class="info pl-3">
-                                                        <h6 class="mb-0 title">{{ $user->name ?? 'Seller' }}</h6>
+                                                        <h6 class="mb-0 title">{{ $seller->store_name ?? '-'}}</h6>
                                                     </div>
                                                 </a>
                                             </td>
-                                            <td>{{ $seller->store_name ?? '-' }}</td>
+                                            <td>{{ $user->name ?? 'Seller' }}</td>
                                             <td>{{ $user->email ?? '-' }}</td>
                                             <td>{{ $user->phone ?? '-' }}</td>
                                             <td>
