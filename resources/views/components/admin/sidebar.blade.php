@@ -23,6 +23,7 @@
                         </a>
                         <div class="submenu {{ request()->is('admin/products*') ? 'show' : '' }}">
                             <a class="{{ request()->is('admin/productslist*') ? 'active' : '' }}" href="{{ url('/admin/productslist') }}">Product List</a>
+                            <a class="{{ request()->is('admin/attributes*') ? 'active' : '' }}" href="{{ url('/admin/attributes') }}">Attributes</a>
                         </div>
                     </li>
 

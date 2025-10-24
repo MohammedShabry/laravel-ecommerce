@@ -39,204 +39,65 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Customer</th>
+                                        <th>Avatar</th>
+                                        <th>Name</th>
                                         <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Orders</th>
+                                        <th>Total Spend</th>
                                         <th>Status</th>
-                                        <th>Registered</th>
-                                        <th class="text-end">Action</th>
+                                        <th>Last Order</th>
+                                        <th class="text-end">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @forelse ($customers as $customer)
                                     <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-1.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Eleanor Pena</h6>
-                                                    <small class="text-muted">Customer ID: #439</small>
-                                                </div>
-                                            </a>
+                                        <td>
+                                            @if ($customer->profile && $customer->profile->profile_image)
+                                                <img src="{{ asset('storage/' . $customer->profile->profile_image) }}" class="img-sm img-avatar" alt="Userpic" />
+                                            @else
+                                                <img src="{{ asset('assetsbackend/imgs/people/avatar-' . ($loop->index % 4 + 1) . '.png') }}" class="img-sm img-avatar" alt="Userpic" />
+                                            @endif
                                         </td>
-                                        <td>eleanor2020@example.com</td>
-                                        <td><span class="badge rounded-pill alert-success">Active</span></td>
-                                        <td>08.07.2020</td>
+                                        <td>{{ $customer->name }}</td>
+                                        <td>{{ $customer->email }}</td>
+                                        <td>{{ $customer->phone }}</td>
+                                        <td>{{ $customer->orders_count }}</td>
+                                        <td>${{ number_format($customer->total_spent, 2) }}</td>
+                                        <td>
+                                            @if ($customer->status === 'active')
+                                                <span class="badge rounded-pill bg-success text-white">Active</span>
+                                            @else
+                                                <span class="badge rounded-pill bg-danger text-white">Inactive</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $customer->last_order_date }}</td>
                                         <td class="text-end">
-                                            <a href="{{ url('/admin/customerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
+                                            <div class="dropdown">
+                                                <a href="#" class="btn btn-sm btn-icon" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="material-icons md-more_horiz"></i>
+                                                </a>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li><a class="dropdown-item" href="{{ route('admin.customerdetail', $customer->id) }}"><i class="material-icons md-visibility"></i> View</a></li>
+
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    @if ($customer->status === 'active')
+                                                        <li><a class="dropdown-item text-danger" href="#" onclick="return confirm('Are you sure?');"><i class="material-icons md-block"></i> Block</a></li>
+                                                    @else
+                                                        <li><a class="dropdown-item text-success" href="#" onclick="return confirm('Are you sure?');"><i class="material-icons md-check_circle"></i> Unblock</a></li>
+                                                    @endif
+                                                </ul>
+                                            </div>
                                         </td>
                                     </tr>
+                                    @empty
                                     <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-2.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Mary Monasa</h6>
-                                                    <small class="text-muted">Customer ID: #129</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>monalisa@example.com</td>
-                                        <td><span class="badge rounded-pill alert-success">Active</span></td>
-                                        <td>11.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/customerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
+                                        <td colspan="9" class="text-center py-4">
+                                            <p class="text-muted">No customers found</p>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-3.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Jonatan Ive</h6>
-                                                    <small class="text-muted">Customer ID: #400</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>mrjohn@example.com</td>
-                                        <td><span class="badge rounded-pill alert-success">Active</span></td>
-                                        <td>08.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/customerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-4.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Eleanor Pena</h6>
-                                                    <small class="text-muted">Customer ID: #439</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>eleanor2020@example.com</td>
-                                        <td><span class="badge rounded-pill alert-danger">Inactive</span></td>
-                                        <td>08.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/customerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-1.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Albert Pushkin</h6>
-                                                    <small class="text-muted">Customer ID: #439</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>someone@mymail.com</td>
-                                        <td><span class="badge rounded-pill alert-success">Active</span></td>
-                                        <td>20.11.2019</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/customerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-2.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Alexandra Pena</h6>
-                                                    <small class="text-muted">Customer ID: #439</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>eleanor2020@example.com</td>
-                                        <td><span class="badge rounded-pill alert-danger">Inactive</span></td>
-                                        <td>08.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/customerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-3.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Eleanor Pena</h6>
-                                                    <small class="text-muted">Customer ID: #439</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>eleanor2020@example.com</td>
-                                        <td><span class="badge rounded-pill alert-danger">Inactive</span></td>
-                                        <td>08.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/customerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-4.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Alex Pushkina</h6>
-                                                    <small class="text-muted">Customer ID: #439</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>alex@gmail.org</td>
-                                        <td><span class="badge rounded-pill alert-success">Active</span></td>
-                                        <td>08.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/customerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-1.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Eleanor Pena</h6>
-                                                    <small class="text-muted">Customer ID: #439</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>eleanor2020@example.com</td>
-                                        <td><span class="badge rounded-pill alert-success">Active</span></td>
-                                        <td>08.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/customerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td width="40%">
-                                            <a href="#" class="itemside">
-                                                <div class="left">
-                                                    <img src="{{ asset('assetsbackend/imgs/people/avatar-2.png') }}" class="img-sm img-avatar" alt="Userpic" />
-                                                </div>
-                                                <div class="info pl-3">
-                                                    <h6 class="mb-0 title">Eleanor Pena</h6>
-                                                    <small class="text-muted">Customer ID: #439</small>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td>eleanor2020@example.com</td>
-                                        <td><span class="badge rounded-pill alert-success">Active</span></td>
-                                        <td>08.07.2020</td>
-                                        <td class="text-end">
-                                            <a href="{{ url('/admin/customerdetail') }}" class="btn btn-sm btn-brand rounded font-sm mt-15">View details</a>
-                                        </td>
-                                    </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
                             <!-- table-responsive.// -->

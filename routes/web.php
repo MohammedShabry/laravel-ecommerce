@@ -8,10 +8,12 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 
 
-// Root route: show single login form as the initial page
+// Root route: show customer home/dashboard as the initial public page (no auth required)
+// This allows visitors (authenticated or not) to see the customer-facing landing page
+// and from there choose to register or log in.
 Route::get('/', function () {
-    return redirect()->route('login.form');
-});
+    return view('customer.home');
+})->name('home');
 
 // Single login form for all roles (admin, seller, customer)
 Route::get('/login', [AuthenticatedSessionController::class,'create'])->name('login.form');
@@ -28,6 +30,7 @@ Route::post('/register', [RegisteredUserController::class,'store'])->name('regis
 Route::middleware(['auth','role:admin'])->group(function(){
     Route::get('/admin/dashboard',[AdminDashboardController::class,'dashboard'])->name('admin.dashboard');
     Route::view('/admin/productslist', 'admin.productslist')->name('admin.productslist');
+    Route::view('/admin/attributes', 'admin.attributes')->name('admin.attributes');
     Route::resource('/admin/categories', App\Http\Controllers\Admin\CategoryController::class)->names([
         'index' => 'categories.index',
         'store' => 'categories.store',
@@ -46,8 +49,9 @@ Route::middleware(['auth','role:admin'])->group(function(){
     Route::post('/admin/brands', [\App\Http\Controllers\Admin\BrandController::class, 'store'])->name('admin.brands.store');
     Route::put('/admin/brands/{brand}', [\App\Http\Controllers\Admin\BrandController::class, 'update'])->name('admin.brands.update');
     Route::delete('/admin/brands/{brand}', [\App\Http\Controllers\Admin\BrandController::class, 'destroy'])->name('admin.brands.destroy');
-    Route::view('/admin/customerslist', 'admin.customerslist')->name('admin.customerslist');
-    Route::view('/admin/adminsetting', 'admin.setting')->name('admin.settings');
+    Route::get('/admin/customerslist', [\App\Http\Controllers\Admin\CustomerController::class, 'index'])->name('admin.customerslist');
+    Route::get('/admin/customerdetail/{customer}', [\App\Http\Controllers\Admin\CustomerController::class, 'show'])->name('admin.customerdetail');
+    Route::get('/admin/customerorders/{customer}', [\App\Http\Controllers\Admin\CustomerController::class, 'orders'])->name('admin.customerorders');    Route::view('/admin/adminsetting', 'admin.setting')->name('admin.settings');
     Route::get('/admin/sellerrequests', [\App\Http\Controllers\Admin\SellerController::class, 'requests'])->name('admin.sellerrequests');
     Route::post('/admin/sellers/{seller}/accept', [\App\Http\Controllers\Admin\SellerController::class, 'accept'])->name('admin.sellers.accept');
     Route::post('/admin/sellers/{seller}/reject', [\App\Http\Controllers\Admin\SellerController::class, 'reject'])->name('admin.sellers.reject');

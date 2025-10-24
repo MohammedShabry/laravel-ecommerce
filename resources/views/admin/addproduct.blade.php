@@ -15,7 +15,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-9">
+                    <div class="col-12">
                         <div class="card">
                             <div class="card-body">
                                 <div class="row gx-5">
@@ -24,6 +24,7 @@
                                             <a class="nav-link active" aria-current="page" href="#" data-target="#section-general">General</a>
                                             <a class="nav-link" href="#" data-target="#section-files-media">Files & Media</a>
                                             <a class="nav-link" href="#" data-target="#section-price-stock">Price & Stock</a>
+                                            <a class="nav-link" href="#" data-target="#section-seo">SEO</a>
                                             <a class="nav-link" href="#" data-target="#section-shipping">Shipping</a>
                                             <a class="nav-link" href="#" data-target="#section-warranty">Warranty</a>
                                         </nav>
@@ -639,7 +640,166 @@
                                                 <!-- placeholder sections for other nav items (kept hidden) -->
                                                 <div id="section-price-stock" class="d-none">
                                                     <div class="mb-4"><h3 class="mb-1">Price & Stock</h3></div>
-                                                    <p class="text-muted">Price & Stock fields go here.</p>
+
+                                                    <!-- Colours searchable multi-select (Choices.js) -->
+                                                    <div class="row mb-4">
+                                                        <label class="col-lg-3 col-form-label">Colours</label>
+                                                        <div class="col-lg-9">
+                                                            <?php
+                                                                $defaultColours = ['Red','Blue','Green','Black','White','Yellow','Orange','Purple','Pink','Brown','Gray','Cyan','Magenta'];
+                                                                $coloursToShow = isset($colors) && is_iterable($colors) ? $colors : $defaultColours;
+                                                            ?>
+                                                            <select id="coloursSelect" name="colours[]" multiple class="form-control" aria-label="Select colours">
+                                                                <?php foreach($coloursToShow as $c): ?>
+                                                                    <?php
+                                                                        // Determine value/label and a color hint to be used as swatch.
+                                                                        $val = is_object($c) ? ($c->value ?? $c->name ?? (string)$c) : (string)$c;
+                                                                        $label = is_object($c) ? ($c->name ?? $c->value ?? (string)$c) : (string)$c;
+                                                                        // Try to pick a hex/color property if provided, fallback to label/value (CSS color names or hex expected)
+                                                                        $colorHint = is_object($c) ? ($c->hex ?? $c->color ?? $c->hex_code ?? $c->value ?? $c->name ?? (string)$c) : (string)$c;
+                                                                    ?>
+                                                                    <option value="<?php echo e($val); ?>" data-color="<?php echo e($colorHint); ?>"><?php echo e($label); ?></option>
+                                                                <?php endforeach; ?>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+
+                                                <!-- Choices.js (searchable multi-select) -->
+                                                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+                                                <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+                                                <style>
+                                                    /* small circular swatch used inside choices and selected items */
+                                                    .colour-swatch {
+                                                        display: inline-block;
+                                                        width: 12px;
+                                                        height: 12px;
+                                                        border-radius: 50%;
+                                                        margin-right: 8px;
+                                                        vertical-align: middle;
+                                                        border: 1px solid rgba(0,0,0,0.08);
+                                                        box-shadow: 0 0 0 1px rgba(255,255,255,0.02) inset;
+                                                    }
+
+                                                    /* slightly larger swatch inside selected items */
+                                                    .choices__list--multiple .colour-swatch {
+                                                        width: 10px;
+                                                        height: 10px;
+                                                        margin-right: 6px;
+                                                    }
+
+                                                    /* ensure dropdown items align nicely */
+                                                    .choices__list--dropdown .choices__item .colour-swatch {
+                                                        margin-right: 10px;
+                                                    }
+                                                </style>
+
+                                                <script>
+                                                    (function(){
+                                                        var select = document.getElementById('coloursSelect');
+                                                        if(!select) return;
+
+                                                        try{
+                                                            var choices = new Choices(select, {
+                                                                removeItemButton: true,
+                                                                searchEnabled: true,
+                                                                placeholderValue: 'Select colours',
+                                                                searchPlaceholderValue: 'Type to search colours',
+                                                                shouldSort: false,
+                                                                itemSelectText: ''
+                                                            });
+
+                                                            // Add swatches to choices dropdown and selected items.
+                                                            function createSwatch(color){
+                                                                var el = document.createElement('span');
+                                                                el.className = 'colour-swatch';
+                                                                // try to set as background color; if invalid CSS color the swatch will be empty
+                                                                el.style.backgroundColor = color || 'transparent';
+                                                                el.setAttribute('aria-hidden','true');
+                                                                return el;
+                                                            }
+
+                                                            function decorateChoices(){
+                                                                // dropdown list items
+                                                                var dropdownItems = document.querySelectorAll('.choices__list--dropdown .choices__item');
+                                                                dropdownItems.forEach(function(item){
+                                                                    // avoid double-inserting
+                                                                    if(item.querySelector('.colour-swatch')) return;
+                                                                    var val = item.getAttribute('data-value');
+                                                                    if(!val) return;
+                                                                    // find original option to read data-color
+                                                                    var opt = select.querySelector('option[value="'+CSS.escape(val)+'"]');
+                                                                    var color = opt ? opt.getAttribute('data-color') : null;
+                                                                    if(color){
+                                                                        var sw = createSwatch(color);
+                                                                        // insert at start of the item
+                                                                        item.insertBefore(sw, item.firstChild);
+                                                                    }
+                                                                });
+
+                                                                // selected items in multiple list
+                                                                var selectedItems = document.querySelectorAll('.choices__list--multiple .choices__item');
+                                                                selectedItems.forEach(function(item){
+                                                                    if(item.querySelector('.colour-swatch')) return;
+                                                                    var val = item.getAttribute('data-value');
+                                                                    if(!val) return;
+                                                                    var opt = select.querySelector('option[value="'+CSS.escape(val)+'"]');
+                                                                    var color = opt ? opt.getAttribute('data-color') : null;
+                                                                    if(color){
+                                                                        var sw = createSwatch(color);
+                                                                        item.insertBefore(sw, item.firstChild);
+                                                                    }
+                                                                });
+                                                            }
+
+                                                            // initial decorate after small timeout to allow Choices to render
+                                                            setTimeout(decorateChoices, 50);
+
+                                                            // When choices list changes (selection or filtering), re-decorate.
+                                                            // Choices emits various events; listen to choice and list events.
+                                                            select.addEventListener('change', function(){ setTimeout(decorateChoices,30); });
+
+                                                            // also hook into Choices' internal event system if available
+                                                            if(choices && typeof choices.passedElement === 'object'){
+                                                                try{
+                                                                    choices.passedElement.element.addEventListener('choice', function(){ setTimeout(decorateChoices,30); });
+                                                                } catch(e){ /* not critical */ }
+                                                            }
+
+                                                            // Re-decorate any time dropdown shows (user opens dropdown)
+                                                            document.addEventListener('click', function(e){ setTimeout(decorateChoices,120); });
+
+                                                        } catch (e) {
+                                                            // If Choices fails (older browsers), leave native select as fallback
+                                                            console.warn('Choices initialization failed for coloursSelect', e);
+                                                        }
+                                                    })();
+                                                </script>
+                                                <!-- SEO section (hidden until user clicks nav) -->
+                                                <div id="section-seo" class="d-none">
+                                                    <div class="mb-4"><h3 class="mb-1">SEO</h3></div>
+                                                    <div class="row mb-4">
+                                                        <label class="col-lg-3 col-form-label">Meta Title</label>
+                                                        <div class="col-lg-9">
+                                                            <input name="meta_title" type="text" class="form-control" placeholder="Enter meta title for SEO" />
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="row mb-4">
+                                                        <label class="col-lg-3 col-form-label">Meta Description</label>
+                                                        <div class="col-lg-9">
+                                                            <textarea name="meta_description" class="form-control" rows="3" placeholder="Enter meta description for SEO"></textarea>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="row mb-4">
+                                                        <label class="col-lg-3 col-form-label">Meta Keywords</label>
+                                                        <div class="col-lg-9">
+                                                            <input name="meta_keywords" type="text" class="form-control" placeholder="Comma separated keywords" />
+                                                            <small class="text-muted d-block mt-2">Examples: electronics, phone, smartphone</small>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 <div id="section-shipping" class="d-none">
                                                     <div class="mb-4"><h3 class="mb-1">Shipping</h3></div>

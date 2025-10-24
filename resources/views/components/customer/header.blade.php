@@ -9,9 +9,15 @@
                         <div class="header-info">
                             <ul>
                                 <li><a href="{{ route('customer.about') }}">About Us</a></li>
-                                <li><a href="{{ route('customer.myaccount') }}">My Account</a></li>
-                                <li><a href="{{ route('customer.wishlist') }}">Wishlist</a></li>
-                                <li><a href="{{ route('customer.myaccount') }}">Order Tracking</a></li>
+                                @guest
+                                    <li><a href="{{ route('login.form') }}">Login</a></li>
+                                    <li><a href="{{ route('register.choice') }}">Register</a></li>
+                                    <li><a href="{{ route('customer.wishlist') }}">Wishlist</a></li>
+                                @else
+                                    <li><a href="{{ route('customer.myaccount') }}">My Account</a></li>
+                                    <li><a href="{{ route('customer.wishlist') }}">Wishlist</a></li>
+                                    <li><a href="{{ route('customer.myaccount') }}">Order Tracking</a></li>
+                                @endguest
                             </ul>
                         </div>
                     </div>
@@ -29,7 +35,7 @@
                     <div class="col-xl-3 col-lg-4">
                         <div class="header-info header-info-right">
                             <ul>
-                                <li>Need help? Call Us: <strong class="text-brand"> + 1800 900</strong></li>
+                                <!-- Removed 'Need help? Call Us' as requested. -->
                                 <li>
                                     <a class="language-dropdown-active" href="#">English <i class="fi-rs-angle-small-down"></i></a>
                                     <ul class="language-dropdown">
@@ -58,6 +64,18 @@
                                         </li>
                                     </ul>
                                 </li>
+                                @guest
+                                    <li><a href="{{ route('register.choice') }}">Register</a></li>
+                                    <li><a href="{{ route('login.form') }}">Login</a></li>
+                                @else
+                                    <li><a href="{{ route('customer.myaccount') }}">My Account</a></li>
+                                    <li>
+                                        <form method="POST" action="{{ route('logout') }}" style="display:inline">
+                                            @csrf
+                                            <button type="submit" class="btn-link" style="background:none;border:none;padding:0;color:inherit;cursor:pointer;">Sign out</button>
+                                        </form>
+                                    </li>
+                                @endguest
                             </ul>
                         </div>
                     </div>
@@ -434,7 +452,7 @@
                         <a href="page-contact.html"><i class="fi-rs-marker"></i> Our location </a>
                     </div>
                     <div class="single-mobile-header-info">
-                        <a href="page-login.html"><i class="fi-rs-user"></i>Log In / Sign Up </a>
+                        <a href="{{ route('login.form') }}"><i class="fi-rs-user"></i>Log In / Sign Up </a>
                     </div>
                     <div class="single-mobile-header-info">
                         <a href="#"><i class="fi-rs-headphones"></i>(+01) - 2345 - 6789 </a>
