@@ -10,8 +10,6 @@
                             <ul>
                                 <li><a href="{{ route('customer.about') }}">About Us</a></li>
                                 @guest
-                                    <li><a href="{{ route('login.form') }}">Login</a></li>
-                                    <li><a href="{{ route('register.choice') }}">Register</a></li>
                                     <li><a href="{{ route('customer.wishlist') }}">Wishlist</a></li>
                                 @else
                                     <li><a href="{{ route('customer.myaccount') }}">My Account</a></li>
