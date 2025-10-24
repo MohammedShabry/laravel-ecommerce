@@ -12,8 +12,11 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('assets/imgs/theme/favicon.svg') }}">
 
     {{-- Styles --}}
-    {{-- Load Tailwind (compiled) first so theme CSS/Bootstrap can override where necessary --}}
-    @vite(['resources/css/app.css', 'resources/js/app.js']) {{-- for Tailwind --}}
+    {{-- Load Tailwind via CDN (no build required) --}}
+    <script src="https://cdn.tailwindcss.com"></script>
+    {{-- Load application CSS and JS from public assets (no Vite) --}}
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <script src="{{ asset('js/app.js') }}" defer></script>
     <link rel="stylesheet" href="{{ asset('assets/css/plugins/animate.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/main.css?v=6.0') }}">
     @stack('styles')
