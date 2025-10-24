@@ -83,8 +83,8 @@
         <div class="header-middle header-middle-ptb-1 d-none d-lg-block">
             <div class="container">
                 <div class="header-wrap">
-                    <div class="logo logo-width-1">
-                        <a href="{{ route('customer.home') }}"><img src="{{ asset('assets/imgs/theme/logo.svg') }}" alt="logo" /></a>
+                        <div class="logo logo-width-1">
+                        <a href="{{ route('customer.home') }}"><img src="{{ asset('sample_logo.png') }}" alt="logo" /></a>
                     </div>
                     <div class="header-right">
                         <div class="search-style-2">
@@ -221,7 +221,7 @@
             <div class="container">
                 <div class="header-wrap header-space-between position-relative">
                     <div class="logo logo-width-1 d-block d-lg-none">
-                        <a href="{{ url('/') }}"><img src="{{ asset('assets/imgs/theme/logo.svg') }}" alt="logo" /></a>
+                        <a href="{{ url('/') }}"><img src="{{ asset('sample_logo.png') }}" alt="logo" /></a>
                     </div>
                     <div class="header-nav d-none d-lg-flex">
                         <div class="main-categori-wrap d-none d-lg-block">
@@ -292,7 +292,13 @@
                         <div class="main-menu main-menu-padding-1 main-menu-lh-2 d-none d-lg-block font-heading">
                             <nav>
                                 <ul>
-                                    <li class="hot-deals"><a href="shop-grid-right.html"><img src="{{ asset('assets/imgs/theme/icons/icon-hot.svg') }}" alt="hot deals" /> Deals</a></li>
+                                    <li>
+                                    <a href="shop-grid-right.html">
+        <span class="fi-rs-flame text-red-600"></span>
+        Deals
+    </a>
+</li>
+
                                     <li>
                                         <a class="{{ request()->routeIs('customer.home') ? 'active' : '' }}" href="{{ route('customer.home') }}">Home</a>
                                     </li>
@@ -384,7 +390,7 @@
         <div class="mobile-header-wrapper-inner">
             <div class="mobile-header-top">
                 <div class="mobile-header-logo">
-                    <a href="{{ url('/') }}"><img src="{{ asset('assets/imgs/theme/logo.svg') }}" alt="logo" /></a>
+                    <a href="{{ url('/') }}"><img src="{{ asset('sample_logo.png') }}" alt="logo" /></a>
                 </div>
                 <div class="mobile-menu-close close-style-wrap close-style-position-inherit">
                     <button class="close-style search-close">
