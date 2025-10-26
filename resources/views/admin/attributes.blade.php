@@ -87,6 +87,8 @@
 </div>
 
 @push('scripts')
+<!-- SweetAlert2 (used for confirm dialogs) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 (function(){
     const nameForm = document.getElementById('attribute-name-form');
@@ -102,7 +104,19 @@
     const allAttributesTable = document.getElementById('all-attributes-table').querySelector('tbody');
 
     let currentAttribute = null;
-    let allAttributes = [];
+    // initialize with server-provided attributes (id and values present)
+    let allAttributes = @json($attributes->toArray() ?? []);
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+    const baseUrl = window.location.pathname.startsWith('/seller') ? '/seller/attributes' : '/admin/attributes';
+
+    async function fetchAttributes(){
+        try{
+            const res = await fetch("/admin/attributes/data", { headers: { 'Accept': 'application/json' }});
+            if(res.ok){ allAttributes = await res.json(); renderAllAttributes(); }
+        }catch(err){ console.error(err); }
+    }
 
     nameForm.addEventListener('submit', e=>{
         e.preventDefault();
@@ -145,14 +159,33 @@
         });
     }
 
-    saveAttributeBtn.addEventListener('click', e=>{
+    saveAttributeBtn.addEventListener('click', async e=>{
         e.preventDefault();
         if(!currentAttribute) return;
         const editIdx = saveAttributeBtn.dataset.editIdx ? parseInt(saveAttributeBtn.dataset.editIdx) : NaN;
-        if(!isNaN(editIdx)){ allAttributes[editIdx] = JSON.parse(JSON.stringify(currentAttribute)); delete saveAttributeBtn.dataset.editIdx; }
-        else{ allAttributes.push(JSON.parse(JSON.stringify(currentAttribute))); }
-        renderAllAttributes();
-        resetForm();
+        const payload = { name: currentAttribute.name, values: currentAttribute.values.map(v=>v.value) };
+        try{
+            if(!isNaN(editIdx) && allAttributes[editIdx] && allAttributes[editIdx].id){
+                // update existing
+                const id = allAttributes[editIdx].id;
+                const res = await fetch(`${baseUrl}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if(res.ok){ await fetchAttributes(); resetForm(); }
+                else{ const txt = await res.text(); alert('Update failed: '+txt); }
+            } else {
+                // create new
+                const res = await fetch(baseUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if(res.ok){ await fetchAttributes(); resetForm(); }
+                else{ const txt = await res.text(); alert('Save failed: '+txt); }
+            }
+        }catch(err){ console.error(err); alert('Error saving attribute'); }
     });
 
     function renderAllAttributes(){
@@ -185,11 +218,45 @@
         });
 
         allAttributesTable.querySelectorAll('.btn-delete').forEach(b=>{
-            b.addEventListener('click', ev=>{
+            b.addEventListener('click', async ev=>{
                 const i = parseInt(ev.currentTarget.dataset.idx);
                 if(isNaN(i)) return;
-                if(!confirm('Delete this attribute?')) return;
-                allAttributes.splice(i,1); renderAllAttributes();
+                const attr = allAttributes[i];
+
+                // Use SweetAlert2 confirmation instead of native confirm()
+                const { isConfirmed } = await Swal.fire({
+                    title: 'Delete attribute?',
+                    text: 'This will permanently delete the attribute and its values.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, delete',
+                    cancelButtonText: 'Cancel',
+                    customClass: { confirmButton: 'btn btn-danger', cancelButton: 'btn btn-secondary' },
+                    buttonsStyling: false
+                });
+
+                if(!isConfirmed) return;
+
+                if(attr && attr.id){
+                    try{
+                        Swal.showLoading();
+                        const res = await fetch(`${baseUrl}/${attr.id}`, {
+                            method: 'DELETE',
+                            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
+                        });
+                        if(res.ok){
+                            await fetchAttributes();
+                            Swal.fire({ icon: 'success', title: 'Deleted', showConfirmButton: false, timer: 1100 });
+                        } else {
+                            const txt = await res.text();
+                            Swal.fire({ icon: 'error', title: 'Delete failed', text: txt });
+                        }
+                    }catch(err){ console.error(err); Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'Error deleting attribute' }); }
+                } else {
+                    // not persisted yet — simply remove locally
+                    allAttributes.splice(i,1); renderAllAttributes();
+                    Swal.fire({ icon: 'success', title: 'Removed', showConfirmButton: false, timer: 900 });
+                }
             });
         });
 
@@ -199,7 +266,9 @@
                 if(isNaN(i)) return;
                 const a = allAttributes[i];
                 if(!a) return;
-                currentAttribute = { name: a.name, values: JSON.parse(JSON.stringify(a.values)) };
+                // normalize values array to {value: '...'}
+                const vals = (a.values || []).map(v=> ({ value: v.value ?? v }));
+                currentAttribute = { name: a.name, values: JSON.parse(JSON.stringify(vals)) };
                 nameInput.value = a.name; savedNameEl.textContent = a.name;
                 valuesSection.classList.remove('d-none'); renderValues();
                 saveAttributeBtn.dataset.editIdx = i; newValueInput.focus();

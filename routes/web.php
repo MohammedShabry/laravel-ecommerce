@@ -2,8 +2,10 @@
 
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Seller\DashboardController as SellerDashboardController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
+use App\Http\Controllers\Customer\ProfileController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 
@@ -30,7 +32,12 @@ Route::post('/register', [RegisteredUserController::class,'store'])->name('regis
 Route::middleware(['auth','role:admin'])->group(function(){
     Route::get('/admin/dashboard',[AdminDashboardController::class,'dashboard'])->name('admin.dashboard');
     Route::view('/admin/productslist', 'admin.productslist')->name('admin.productslist');
-    Route::view('/admin/attributes', 'admin.attributes')->name('admin.attributes');
+    Route::get('/admin/attributes', [AttributeController::class, 'index'])->name('admin.attributes');
+    // JSON data endpoint for AJAX refresh
+    Route::get('/admin/attributes/data', [AttributeController::class, 'data'])->name('admin.attributes.data');
+    Route::post('/admin/attributes', [AttributeController::class, 'store'])->name('admin.attributes.store');
+    Route::put('/admin/attributes/{attribute}', [AttributeController::class, 'update'])->name('admin.attributes.update');
+    Route::delete('/admin/attributes/{attribute}', [AttributeController::class, 'destroy'])->name('admin.attributes.destroy');
     Route::resource('/admin/categories', App\Http\Controllers\Admin\CategoryController::class)->names([
         'index' => 'categories.index',
         'store' => 'categories.store',
@@ -71,6 +78,13 @@ Route::middleware(['auth','role:seller'])->group(function(){
     Route::view('/seller/transactions', 'seller.transactions')->name('seller.transactions');
     Route::view('/seller/reviews', 'seller.reviews')->name('seller.reviews');
 
+    // Seller attributes management (each seller manages their own attributes)
+    Route::get('/seller/attributes', [AttributeController::class, 'index'])->name('seller.attributes');
+    Route::get('/seller/attributes/data', [AttributeController::class, 'data'])->name('seller.attributes.data');
+    Route::post('/seller/attributes', [AttributeController::class, 'store'])->name('seller.attributes.store');
+    Route::put('/seller/attributes/{attribute}', [AttributeController::class, 'update'])->name('seller.attributes.update');
+    Route::delete('/seller/attributes/{attribute}', [AttributeController::class, 'destroy'])->name('seller.attributes.destroy');
+
 });
 Route::middleware(['auth','role:customer'])->group(function(){
     Route::get('/customer/dashboard',[CustomerDashboardController::class,'dashboard'])->name('customer.dashboard');
@@ -87,4 +101,6 @@ Route::middleware(['auth','role:customer'])->group(function(){
     Route::view('/customer/vendorproducts', 'customer.vendorproducts')->name('customer.vendorproducts');
     Route::view('/customer/checkout', 'customer.checkout')->name('customer.checkout');
     Route::view('/customer/allproducts', 'customer.allproducts')->name('customer.allproducts');
+    // Profile update (inline edit on My Account page)
+    Route::post('/customer/profile',[ProfileController::class,'update'])->name('customer.profile.update');
 });
