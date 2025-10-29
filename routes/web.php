@@ -3,6 +3,7 @@
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\AttributeController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Seller\DashboardController as SellerDashboardController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\Customer\ProfileController;
@@ -49,11 +50,9 @@ Route::middleware(['auth','role:admin'])->group(function(){
     Route::get('/admin/sellerlist', [\App\Http\Controllers\Admin\SellerController::class, 'index'])->name('admin.sellerlist');
     // show a specific seller detail page (admin)
     Route::get('/admin/sellers/{seller}', [\App\Http\Controllers\Admin\SellerController::class, 'show'])->name('admin.sellerdetail');
-    Route::get('/admin/addproduct', function () {
-        $brands = \App\Models\Brand::orderBy('name')->get();
-        $categories = \App\Models\Category::orderBy('name')->get();
-        return view('admin.addproduct', compact('brands', 'categories'));
-    })->name('admin.addproduct');
+    Route::get('/admin/addproduct', [ProductController::class, 'create'])->name('admin.addproduct');
+    // Store product
+    Route::post('/admin/products', [ProductController::class, 'store'])->name('admin.products.store');
     Route::view('/admin/transactions', 'admin.transactions')->name('admin.transactions');
     Route::view('/admin/reviews', 'admin.reviews')->name('admin.reviews');
     Route::get('/admin/brands', [\App\Http\Controllers\Admin\BrandController::class, 'index'])->name('admin.brands');

@@ -5,8 +5,124 @@
 @section('content')
 
 <div class="content-header">
-    <h1>Attributes</h1>
+    <h1 class="content-title">Attributes</h1>
 </div>
+
+<style>
+    /* Adopt sellerlist responsive table base styles and keep attribute-specific tweaks. */
+    .table-responsive {
+        -webkit-overflow-scrolling: touch; /* momentum scrolling on iOS */
+        scroll-behavior: smooth;
+        overflow-x: auto;
+    }
+
+    .table-responsive .table {
+        width: auto;
+        max-width: 100%;
+        table-layout: auto; /* columns size according to content */
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .table-responsive .table th,
+    .table-responsive .table td {
+        white-space: normal;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        padding: .6rem .75rem;
+    }
+
+    .table-responsive .table {
+        border: 1px solid #dee2e6;
+        border-radius: .375rem;
+    }
+
+    .table-responsive .table thead th { border-bottom: 2px solid #dee2e6; }
+    .table-responsive .table tbody td,
+    .table-responsive .table thead th { border-bottom: 1px solid #e9ecef; }
+    .table-responsive .table th,
+    .table-responsive .table td { border-right: 1px solid #e9ecef; }
+    .table-responsive .table th:last-child,
+    .table-responsive .table td:last-child { border-right: 0; }
+    .table-responsive .table tbody tr:last-child td { border-bottom: 0; }
+
+    .table-responsive .img-avatar {
+        width: auto; height: auto; max-width: 48px; max-height: 48px; object-fit: cover; flex-shrink: 1;
+    }
+
+    .itemside { display: flex; align-items: center; gap: .75rem; }
+    .itemside .left { flex: 0 1 auto; display: flex; align-items: center; }
+    .itemside .info { flex: 1 1 auto; min-width: 0; }
+
+    .content-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+    .content-header .content-title { margin:0; font-size:1.25rem; }
+
+    .table-responsive td.text-end,
+    .table-responsive td.text-end * { overflow: visible !important; }
+    .table-responsive .dropdown { position: relative; }
+    .table-responsive .dropdown-menu { position: absolute; top:100%; right:0; left:auto; z-index:3000; min-width:8rem; }
+
+    @media (max-width: 991.98px) {
+        .table-responsive .table { width: max-content; min-width: 100%; }
+        .table-responsive .table th, .table-responsive .table td { white-space: nowrap; }
+        .content-header { align-items:flex-start; }
+        .content-header .content-title { width:100%; }
+        .content-header > div { width:100%; display:flex; justify-content:flex-end; }
+    }
+
+    @media (min-width: 992px) {
+        .table-responsive .table { width: 100%; }
+        .table-responsive .table th, .table-responsive .table td { white-space: normal; }
+    }
+
+    /* Values table: allow wrapping on small screens so values use available space
+       and do not force horizontal scroll. This keeps the main attributes table
+       scrollable while making the small "values" table compact on mobile. */
+    .values-table-responsive .table { min-width: 0 !important; table-layout: fixed; }
+    .values-table-responsive .table th, .values-table-responsive .table td { white-space: normal; overflow-wrap:anywhere; word-break:break-word; }
+    .values-table-responsive .table th:last-child, .values-table-responsive .table td:last-child { white-space: nowrap; }
+
+    /* Make attribute value badges wrap inside the values column of the big table */
+    /* Values displayed inline and horizontally scrollable (single row) */
+    #all-attributes-table td .values-inline { display:flex; gap:0.5rem; align-items:center; overflow-x:auto; -webkit-overflow-scrolling:touch; white-space:nowrap; padding-bottom:4px; }
+    #all-attributes-table td .values-inline .badge { flex: 0 0 auto; white-space: nowrap; }
+    /* fallback: keep previous wrapping behavior for non-supporting browsers */
+    #all-attributes-table td .badge { overflow-wrap: anywhere; }
+
+    @media (min-width: 768px) {
+        .values-table-responsive .table { min-width: 100% !important; table-layout: auto; }
+        .values-table-responsive .table th:last-child, .values-table-responsive .table td:last-child { width: 90px; text-align:center; white-space: nowrap; }
+        .values-table-responsive .table th:first-child, .values-table-responsive .table td:first-child { white-space: normal; }
+        #new-value { max-width: 360px; }
+    }
+
+    @media (min-width: 1200px) { #new-value { max-width: 420px; } }
+
+    /* Tweak for the all-attributes table to better manage space on small screens. */
+    #all-attributes-table td:nth-child(3), #all-attributes-table th:nth-child(3) { white-space: normal; overflow-wrap:anywhere; word-break:break-word; }
+    #all-attributes-table td:nth-child(2), #all-attributes-table th:nth-child(2) { vertical-align: top; }
+    #all-attributes-table td:nth-child(1), #all-attributes-table th:nth-child(1) { vertical-align: top; }
+    #all-attributes-table th:last-child, #all-attributes-table td:last-child { width: 90px; white-space: nowrap; text-align:center; vertical-align: middle; }
+    #all-attributes-table td .d-flex.gap-2 { gap: 0.35rem !important; }
+    @media all and (max-width: 480px) { #all-attributes-table td .d-flex.gap-2 { gap: 0.25rem !important; } #all-attributes-table th:last-child, #all-attributes-table td:last-child { width:72px; } #all-attributes-table td .badge { padding:0.25rem 0.5rem; font-size:.85rem; } }
+
+    /* Small-screen native table semantics (matches sellerlist) - preserve header/body alignment while allowing horizontal scroll */
+    @media (max-width: 480px) {
+        .table-responsive .table {
+            display: table !important;
+            table-layout: auto !important;
+            width: max-content; /* let table be as wide as content, container will scroll */
+            min-width: 100%;
+        }
+        .table-responsive thead { display: table-header-group !important; }
+        .table-responsive tbody { display: table-row-group !important; }
+        .table-responsive tr { display: table-row !important; }
+        .table-responsive th,
+        .table-responsive td { display: table-cell !important; white-space: nowrap; }
+    }
+
+</style>
 
 <div class="row mt-4">
     <!-- Add Attribute (left) -->
@@ -34,7 +150,7 @@
                 Add Values for: <span id="saved-attribute-name" class="fw-bold"></span>
             </div>
             <div class="card-body">
-                <div class="table-responsive mb-3">
+                <div class="table-responsive values-table-responsive mb-3">
                     <table class="table table-sm table-bordered" id="values-table">
                         <thead>
                             <tr>
@@ -73,7 +189,7 @@
                                 <th style="width:40px">#</th>
                                 <th>Name</th>
                                 <th>Values</th>
-                                <th style="width:150px" class="text-center">Actions</th>
+                                <th style="" class="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -196,9 +312,9 @@
         }
 
         allAttributes.forEach((attr, idx)=>{
-            const valuesBadges = `<div class="d-flex flex-wrap gap-2">
+            const valuesBadges = `<div class="values-inline">
                 ${attr.values.map(v=>`
-                    <div class="badge bg-light text-dark border border-secondary d-flex align-items-center gap-2" style="padding: 0.5rem 0.75rem;">
+                    <div class="badge bg-light text-dark border border-secondary d-flex align-items-center gap-2" style="padding: 0.5rem 0.75rem; white-space:nowrap;">
                         <span>${escapeHtml(v.value)}</span>
                     </div>
                 `).join('')}

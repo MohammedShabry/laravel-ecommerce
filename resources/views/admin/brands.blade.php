@@ -1,294 +1,390 @@
 @extends('layouts.admin')
 
-@section('title', 'Dashboard')
+@section('title', 'Brands')
 
 @section('content')
-
-
-<div class="content-header">
+<div class="content-header d-flex justify-content-between align-items-center flex-wrap">
     <div>
-        <h2 class="content-title card-title">Brand</h2>
-        <p>Brand and vendor management</p>
+        <h2 class="content-title card-title mb-1">Brands</h2>
     </div>
-    <div>
-        <a href="#" class="btn btn-primary" id="showBrandForm"><i class="text-muted material-icons md-post_add"></i>Add New Brand</a>
-    </div>
+    <button class="btn btn-primary d-flex align-items-center gap-1 add-brand-btn" 
+            data-bs-toggle="modal" 
+            data-bs-target="#brandModal">
+        <i data-lucide="plus"></i> Add Brand
+    </button>
 </div>
 
-<div class="row">
-    <!-- Sidebar form (hidden by default) -->
-    <div class="col-md-3" id="brandFormSidebar" style="display:none;">
-        <div class="card">
-            <div class="card-header">Add New Brand</div>
-            <div class="card-body">
-                <form action="{{ route('admin.brands.store') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <div class="mb-3">
-                        <label for="brandName" class="form-label">Brand Name</label>
-                        <input type="text" class="form-control" id="brandName" name="name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="brandImage" class="form-label">Brand Image</label>
-                        <input type="file" class="form-control" id="brandImage" name="image">
-                        <div id="currentBrandImageWrapper" style="display:none; margin-top:10px;">
-                            <img id="currentBrandImage" src="" alt="Current Brand Image" style="max-height:60px; max-width:100px; object-fit:contain; border:1px solid #eee; padding:2px; background:#fafafa;">
-                        </div>
-                    </div>
-                    <!-- Status field removed: status will be set to active by default -->
-                    <button type="submit" class="btn btn-success">Add Brand</button>
-                </form>
-            </div>
+<div class="card mt-4 border-0 shadow-sm">
+    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center flex-wrap">
+        <div class="col-12 col-md-4 mb-2 mb-md-0">
+            <input type="text" class="form-control" placeholder="Search brand..." id="brandSearch">
         </div>
     </div>
 
-    <!-- Brands list -->
-    <div id="brandsColumn" class="col-md-12">
-        <div class="card mb-4">
-            <header class="card-header">
-                <div class="row gx-3">
-                    <div class="col-lg-4 mb-lg-0 mb-15 me-auto">
-                        <input type="text" placeholder="Search..." class="form-control" />
+    <div class="card-body">
+        <div class="row g-3" id="brandGrid">
+            @forelse($brands as $brand)
+                <div class="col-6 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                    <div class="card brand-item border-0 shadow-sm h-100 position-relative">
+                        <!-- Image section with gradient overlay -->
+                        <div class="brand-image-section">
+                            <img src="{{ $brand->image ? asset($brand->image) : asset('assetsbackend/imgs/brands/default.png') }}"
+                                 alt="{{ $brand->name }}" class="brand-img">
+                            <div class="brand-overlay"></div>
+                        </div>
+                        
+                        <!-- Content section -->
+                        <div class="brand-content">
+                            <h6 class="brand-name text-truncate mb-0">{{ $brand->name }}</h6>
+                            
+                            <!-- Action buttons with hover effect -->
+                            <div class="brand-actions">
+                                <button class="btn-action btn-edit edit-brand-btn"
+                                        data-id="{{ $brand->id }}"
+                                        data-name="{{ $brand->name }}"
+                                        data-image="{{ $brand->image }}"
+                                        title="Edit">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <form action="{{ route('admin.brands.destroy', $brand->id) }}"
+                                      method="POST"
+                                      class="delete-brand-form d-inline"
+                                      data-brand-name="{{ $brand->name }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-action btn-delete" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </header>
-            <div class="card-body">
-                <div class="row gx-3">
-                    @forelse($brands as $brand)
-                        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 mb-4">
-                            <figure class="card border-1 brand-card position-relative">
-                                <div class="card-header bg-white text-center brand-img-header">
-                                    <img src="{{ $brand->image ? asset($brand->image) : asset('assetsbackend/imgs/brands/default.png') }}" class="img-fluid brand-img" alt="Logo" />
-                                </div>
-                                <figcaption class="card-body text-center d-flex flex-column justify-content-between w-100 brand-card-body">
-                                    <h6 class="card-title mb-0">{{ $brand->name }}</h6>
-                                    <span class="badge bg-{{ $brand->status ? 'success' : 'secondary' }} mt-1 mb-2">{{ $brand->status ? 'Active' : 'Inactive' }}</span>
-                                    
-                                    <!-- Action icons moved to bottom right corner -->
-                                    <div class="brand-actions">
-                                        <a href="#" class="text-success edit-brand-btn" title="Edit" data-id="{{ $brand->id }}" data-name="{{ $brand->name }}" data-image="{{ $brand->image }}"><i class="material-icons md-edit"></i></a>
-                                        <form action="{{ route('admin.brands.destroy', $brand->id) }}" method="POST" class="d-inline delete-brand-form" data-brand-name="{{ $brand->name }}" style="display:inline;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn  p-0 m-0 text-danger" title="Delete"><i class="material-icons md-delete"></i></button>
-                                        </form>
-                                    </div>
-                                </figcaption>
-                            </figure>
-                        </div>
+            @empty
+                <p class="text-muted text-center mt-3">No brands found.</p>
+            @endforelse
+        </div>
+    </div>
+</div>
+
+<!-- Brand Modal -->
+<div class="modal fade" id="brandModal" tabindex="-1" aria-labelledby="brandModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form action="{{ route('admin.brands.store') }}" method="POST" enctype="multipart/form-data" class="modal-content">
+        @csrf
+        <div class="modal-header">
+            <h5 class="modal-title" id="brandModalLabel">Add New Brand</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+                <label class="form-label">Brand Name</label>
+                <input type="text" name="name" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Brand Image</label>
+                <input type="file" name="image" class="form-control">
+                <div id="currentBrandImageWrapper" class="mt-2 d-none">
+                    <img id="currentBrandImage" src="" class="img-thumbnail" style="max-width: 100px;">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Save Brand</button>
+        </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+
 <style>
-    .brand-card {
-        min-height: 220px;
-        height: 100%;
-        width: 100%;
-        box-sizing: border-box;
+/* ==== HEADER ==== */
+.content-header {
+    margin-bottom: 1rem;
+}
+.content-header .btn {
+    white-space: nowrap;
+}
+
+/* ==== BRAND CARD DESIGN ==== */
+.brand-item {
+    border-radius: 16px;
+    background-color: #fff;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.brand-item:hover .brand-overlay {
+    opacity: 0.15;
+}
+
+.brand-item:hover .brand-actions {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Image Section */
+.brand-image-section {
+    position: relative;
+    height: 120px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.brand-img {
+    max-height: 70%;
+    max-width: 70%;
+    object-fit: contain;
+    z-index: 1;
+    position: relative;
+    transition: transform 0.3s ease;
+}
+
+.brand-item:hover .brand-img {
+    transform: scale(1.08);
+}
+
+.brand-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.05) 0%, rgba(111, 66, 193, 0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Content Section */
+.brand-content {
+    flex: 1;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: #fff;
+}
+
+.brand-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #212529;
+    line-height: 1.3;
+}
+
+/* ==== ACTION BUTTONS ==== */
+.brand-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 8px;
+    opacity: 0;
+    transform: translateY(5px);
+    transition: all 0.3s ease;
+}
+
+.btn-action {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.btn-edit {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: #fff;
+}
+
+.btn-edit:hover {
+    background: linear-gradient(135deg, #ffb300 0%, #fb8c00 100%);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+}
+
+.btn-delete {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: #fff;
+}
+
+.btn-delete:hover {
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+.btn-action i {
+    font-size: 0.9rem;
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 576px) {
+    .content-header {
+        flex-wrap: nowrap !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        display: flex !important; /* ensure flex row on small screens */
+        flex-direction: row !important;
+    }
+    /* Ensure the title can shrink and truncate instead of pushing the button to a new line */
+    /* Ensure the title container can shrink instead of pushing the button to next line */
+    .content-header > div {
+        flex: 1 1 auto;
+        min-width: 0; /* allows text-overflow to work */
         display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
         align-items: center;
-        position: relative;
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .content-header .content-title {
+        margin: 0;
+        white-space: nowrap;
         overflow: hidden;
-        transition: transform 0.2s, box-shadow 0.2s;
+        text-overflow: ellipsis;
+    }
+    /* Keep the add button its natural size, prevent growth, and push it to the right */
+    .content-header .add-brand-btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        margin-left: 0.5rem;
+        margin-right: 0;
+    }
+    /* As a safeguard, make the button take right-most space using auto margin if needed */
+    .content-header .add-brand-btn.ml-auto,
+    .content-header .add-brand-btn[style*="margin-left:auto"] {
+        margin-left: auto !important;
+    }
+    .add-brand-btn {
+        padding: 0.2rem 0.75rem !important;
+        font-size: 0.85rem !important;
+    }
+    .add-brand-btn i {
+        width: 10px;
+        height: 10px;
     }
     
-    .brand-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    /* Mobile-specific adjustments */
+    .brand-item {
+        height: 150px;
     }
     
-    .brand-img-header {
-        height: 140px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        background: #fafbfc;
-        border-bottom: 1px solid #f0f0f0;
-        width: 100%;
-        padding: 1rem;
+    .brand-image-section {
+        height: 90px;
     }
     
     .brand-img {
-        max-height: 100px;
-        max-width: 140px;
-        object-fit: contain;
-        margin: 0 auto;
-        display: block;
+        max-height: 60%;
+        max-width: 60%;
     }
     
-    .brand-card-body {
-        padding: 1rem 1rem 2.5rem 1rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        position: relative;
-        width: 100%;
-        flex-grow: 1;
+    .brand-content {
+        padding: 10px 12px;
     }
     
-    .brand-card-body h6 {
-        font-size: 1rem;
-        font-weight: 500;
-        margin-bottom: 0;
+    .brand-name {
+        font-size: 0.85rem;
     }
     
-    .badge {
-        font-size: 0.75rem;
-        padding: 0.35em 0.65em;
-        margin-top: 0.25rem;
+    .btn-action {
+        width: 28px;
+        height: 28px;
+        font-size: 0.85rem;
     }
     
-    /* Fix spacing in grid */
-    .row.gx-3 {
-        margin-right: -12px;
-        margin-left: -12px;
-    }
-    
-    .row.gx-3 > [class*="col-"] {
-        padding-right: 12px;
-        padding-left: 12px;
-    }
-    
-    /* Position action buttons at bottom right */
     .brand-actions {
-        position: absolute;
-        bottom: 8px;
-        right: 8px;
-        display: flex;
-        gap: 8px;
+        margin-top: 6px;
+        opacity: 1;
+        transform: translateY(0);
     }
+}
 </style>
-                    @empty
-                        <p>No brands found.</p>
-                    @endforelse
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- SweetAlert2 from CDN (only added once here) -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    document.getElementById('showBrandForm').addEventListener('click', function(e) {
-        e.preventDefault();
-        var sidebar = document.getElementById('brandFormSidebar');
-        var brandsCol = document.getElementById('brandsColumn');
-        var isVisible = sidebar.style.display !== 'none' && sidebar.style.display !== '';
-        // Toggle display
-        sidebar.style.display = isVisible ? 'none' : 'block';
-        // Adjust brands column width
-        if (isVisible) {
-            // hiding sidebar -> full width
-            brandsCol.classList.remove('col-md-9');
-            brandsCol.classList.add('col-md-12');
-        } else {
-            // showing sidebar -> shrink brands
-            brandsCol.classList.remove('col-md-12');
-            brandsCol.classList.add('col-md-9');
-        }
-        // Reset form to add mode
-        var form = sidebar.querySelector('form');
-        form.action = "{{ route('admin.brands.store') }}";
-        form.querySelector('input[name="name"]').value = '';
-        form.querySelector('input[name="image"]').value = '';
-        form.querySelector('button[type="submit"]').textContent = 'Add Brand';
-        var m = form.querySelector('input[name="_method"]'); if (m) m.remove();
-        sidebar.querySelector('.card-header').textContent = 'Add New Brand';
-        // Hide current image preview
-        var imgWrapper = document.getElementById('currentBrandImageWrapper'); if (imgWrapper) imgWrapper.style.display = 'none';
-        var imgEl = document.getElementById('currentBrandImage'); if (imgEl) imgEl.src = '';
-    });
+document.addEventListener('DOMContentLoaded', () => {
+    lucide.createIcons();
 
-    // Edit brand logic
-    document.querySelectorAll('.edit-brand-btn').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
+    // Edit brand
+    document.querySelectorAll('.edit-brand-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
             e.preventDefault();
-            var sidebar = document.getElementById('brandFormSidebar');
-            sidebar.style.display = 'block';
-            var brandsCol = document.getElementById('brandsColumn');
-            // ensure brands column shrinks when editing
-            brandsCol.classList.remove('col-md-12');
-            brandsCol.classList.add('col-md-9');
-            var form = sidebar.querySelector('form');
-            form.action = '/admin/brands/' + btn.dataset.id;
-            // Add hidden _method input for PUT
+            const modal = new bootstrap.Modal(document.getElementById('brandModal'));
+            const form = document.querySelector('#brandModal form');
+            const label = document.getElementById('brandModalLabel');
+            const imgWrapper = document.getElementById('currentBrandImageWrapper');
+            const imgTag = document.getElementById('currentBrandImage');
+
+            label.textContent = 'Edit Brand';
+            form.action = `/admin/brands/${btn.dataset.id}`;
             if (!form.querySelector('input[name="_method"]')) {
-                var methodInput = document.createElement('input');
-                methodInput.type = 'hidden';
-                methodInput.name = '_method';
-                methodInput.value = 'PUT';
-                form.appendChild(methodInput);
-            } else {
-                form.querySelector('input[name="_method"]').value = 'PUT';
+                const m = document.createElement('input');
+                m.name = '_method';
+                m.type = 'hidden';
+                m.value = 'PUT';
+                form.appendChild(m);
             }
             form.querySelector('input[name="name"]').value = btn.dataset.name;
             form.querySelector('input[name="image"]').value = '';
-            form.querySelector('button[type="submit"]').textContent = 'Save Changes';
-            sidebar.querySelector('.card-header').textContent = 'Edit Brand';
-            // Show current image preview if available
-            var currentImage = btn.dataset.image;
-            var imgWrapper = document.getElementById('currentBrandImageWrapper');
-            var imgTag = document.getElementById('currentBrandImage');
-            if (currentImage) {
-                imgTag.src = currentImage.startsWith('http') ? currentImage : (window.location.origin + '/' + currentImage.replace(/^\/+/, ''));
-                imgWrapper.style.display = 'block';
+
+            if (btn.dataset.image) {
+                imgTag.src = btn.dataset.image.startsWith('http') ? btn.dataset.image : (window.location.origin + '/' + btn.dataset.image);
+                imgWrapper.classList.remove('d-none');
             } else {
-                imgTag.src = '';
-                imgWrapper.style.display = 'none';
+                imgWrapper.classList.add('d-none');
             }
+
+            form.querySelector('button[type="submit"]').textContent = 'Save Changes';
+            modal.show();
         });
     });
 
-    // SweetAlert2 delete logic (AJAX)
-    document.querySelectorAll('.delete-brand-form').forEach(function(form) {
-        form.addEventListener('submit', function(e) {
+    // Reset modal on close
+    document.getElementById('brandModal').addEventListener('hidden.bs.modal', () => {
+        const form = document.querySelector('#brandModal form');
+        const label = document.getElementById('brandModalLabel');
+        form.action = "{{ route('admin.brands.store') }}";
+        form.querySelector('input[name="name"]').value = '';
+        form.querySelector('input[name="image"]').value = '';
+        form.querySelector('button[type="submit"]').textContent = 'Save Brand';
+        const method = form.querySelector('input[name="_method"]');
+        if (method) method.remove();
+        document.getElementById('currentBrandImageWrapper').classList.add('d-none');
+    });
+
+    // Delete confirmation
+    document.querySelectorAll('.delete-brand-form').forEach(form => {
+        form.addEventListener('submit', e => {
             e.preventDefault();
-            const brandName = form.getAttribute('data-brand-name') || 'this brand';
+            const brandName = form.dataset.brandName;
             Swal.fire({
-                title: 'Delete Brand?',
-                text: `Are you sure you want to delete "${brandName}"? This action cannot be undone!`,
-                icon: 'warning',
+                title: `Delete "${brandName}"?`,
+                text: "This action cannot be undone.",
+                icon: "warning",
                 showCancelButton: true,
-                confirmButtonText: 'Yes, delete',
-                cancelButtonText: 'Cancel',
+                confirmButtonText: "Yes, delete it",
+                cancelButtonText: "Cancel",
                 customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-secondary'
+                    confirmButton: "btn btn-danger me-2",
+                    cancelButton: "btn btn-secondary"
                 },
                 buttonsStyling: false
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Submit via AJAX to avoid full page reload
-                    const fd = new FormData(form);
-                    fetch(form.action, {
-                        method: 'POST',
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                        body: fd,
-                        credentials: 'same-origin'
-                    })
-                    .then(async res => {
-                        if (!res.ok) {
-                            let msg = 'Failed to delete';
-                            try { const data = await res.json(); msg = data.message || msg; } catch {};
-                            throw new Error(msg);
-                        }
-                        // Remove card from grid
-                        const card = form.closest('.col-xl-3, .col-lg-3, .col-md-3, .col-sm-6, .col-12');
-                        if (card) card.remove();
-                        Swal.fire({ icon: 'success', title: 'Deleted!', text: 'Brand deleted successfully.', timer: 1500, showConfirmButton: false });
-                    })
-                    .catch(err => {
-                        Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'Failed to delete' });
-                    });
-                }
+            }).then(result => {
+                if (result.isConfirmed) form.submit();
             });
         });
     });
+});
 </script>
-
-
 @endsection
