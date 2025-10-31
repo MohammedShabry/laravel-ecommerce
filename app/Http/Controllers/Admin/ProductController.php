@@ -7,13 +7,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductTag;
 use App\Models\ProductVariant;
 use App\Models\ProductVariantValue;
-use App\Models\Attribute;
-use App\Models\AttributeValue;
 use Illuminate\Support\Carbon;
 
 class ProductController extends Controller
@@ -33,43 +32,84 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        // 1. Validation using Validator facade
+        $validator = Validator::make($request->all(), [
+            // Required core fields
             'name' => 'required|string|max:255',
             'seller_id' => 'nullable|integer|exists:users,id',
             'unit' => 'nullable|string|max:50',
             'weight' => 'nullable|numeric',
-            'main_category' => 'nullable|integer|exists:categories,id',
+            // main_category is required (marked with *) in the form
+            'main_category' => 'required|integer|exists:categories,id',
             'brand_id' => 'nullable|integer|exists:brands,id',
             'short_description' => 'nullable|string',
-            'description' => 'nullable|string',
+            // description is required
+            'description' => 'required|string',
             'barcode' => 'nullable|string|max:255',
-            'refund_note' => 'nullable|string',
+            // refund note becomes required only when refundable toggle is on
+            'refund_note' => 'nullable|required_if:refundable,1|string',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
             'meta_keywords' => 'nullable|string',
-            'shipping_cost' => 'nullable|numeric',
-            'shipping_days' => 'nullable|integer',
+            // shipping_cost is required when flat_rate is selected
+            'shipping_cost' => 'required_if:flat_rate,1|numeric',
+            'shipping_days' => 'required|integer|min:0',
             'low_stock_quantity' => 'nullable|integer',
+            // discount fields: optional (Price & Stock section)
             'discount' => 'nullable|numeric',
             'discount_type' => 'nullable|in:flat,percent',
             'tags' => 'nullable|string',
-            'flash_start' => 'nullable|date',
-            'flash_end' => 'nullable|date',
-            'flash_discount' => 'nullable|numeric',
-            'flash_discount_type' => 'nullable|in:flat,percent',
+            // Flash deal fields: ONLY required when flash deal toggle is enabled
+            'flash_start' => 'nullable|required_if:flash_deal_enabled,1|date',
+            'flash_end' => 'nullable|required_if:flash_deal_enabled,1|date',
+            'flash_discount' => 'nullable|required_if:flash_deal_enabled,1|numeric',
+            'flash_discount_type' => 'nullable|required_if:flash_deal_enabled,1|in:flat,percent',
             'published_at' => 'nullable|date',
             'cash_on_delivery' => 'nullable|boolean',
             'free_shipping' => 'nullable|boolean',
             'flat_rate' => 'nullable|boolean',
             'warranty_enabled' => 'nullable|boolean',
             'warranty_duration' => 'nullable|string',
+            'thumbnail_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            // gallery images marked required in the form (at least one)
+            'gallery_images' => 'required|array|min:1',
+            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            // colours field is required (at least one)
+            'colours' => 'required|array|min:1',
+            // Variants: require at least one variant and all per-variant fields
+            'variants' => 'required|array|min:1',
+            'variants.*.sku' => 'required|string|max:255',
+            'variants.*.price' => 'required|numeric|min:0',
+            'variants.*.stock' => 'required|integer|min:0',
+            // stock visibility is optional
+            'stock_visibility' => 'nullable|in:quantity,text_only,hidden',
         ]);
+
+        // 2. Check validation
+        if ($validator->fails()) {
+            // Check if flash deal is enabled but required fields are missing
+            if ($request->boolean('flash_deal_enabled')) {
+                if (!$request->filled('flash_start') || !$request->filled('flash_end') || !$request->filled('flash_discount')) {
+                    return redirect()->back()
+                        ->withErrors($validator)
+                        ->withInput()
+                        ->with('error', 'Flash Deal is enabled. Please provide Start Date, End Date, and Discount amount.');
+                }
+            }
+            
+            // Return with validation errors (will be displayed as toast messages)
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'Please fill all required fields correctly.');
+        }
 
         DB::beginTransaction();
         try {
+            // 3. Prepare product data safely
             $productData = [
-                'name' => $validated['name'],
-                'slug' => Str::slug($validated['name']) ?: Str::random(8),
+                'name' => $request->input('name'),
+                'slug' => Str::slug($request->input('name')) ?: Str::random(8),
                 'category_id' => $request->input('main_category'),
                 'brand_id' => $request->input('brand_id'),
                 'short_description' => $request->input('short_description'),
@@ -81,9 +121,9 @@ class ProductController extends Controller
                 'shipping_cost' => $request->input('shipping_cost'),
                 'shipping_days' => $request->input('shipping_days'),
                 'low_stock_quantity' => $request->input('low_stock_quantity'),
+                'stock_visibility' => $request->input('stock_visibility', 'quantity'),
                 'discount' => $request->input('discount'),
                 'discount_type' => $request->input('discount_type'),
-                // additional fields requested
                 'seller_id' => $request->input('seller_id') ?: (auth()->check() ? auth()->id() : null),
                 'unit' => $request->input('unit'),
                 'weight' => $request->input('weight'),
@@ -102,17 +142,12 @@ class ProductController extends Controller
                 'refundable' => $request->boolean('refundable'),
                 'featured' => $request->boolean('featured'),
                 'todays_deal' => $request->boolean('todays_deal'),
+                'is_visible' => $request->has('is_visible') ? $request->boolean('is_visible') : true,
             ];
 
             $product = Product::create($productData);
 
-            // Ensure meta title saved (explicit update in case of mass-assignment mismatch)
-            if ($request->filled('meta_title')) {
-                $product->meta_title = $request->input('meta_title');
-                $product->save();
-            }
-
-            // Save thumbnail image if provided
+            // 4. Save thumbnail
             if ($request->hasFile('thumbnail_image')) {
                 $file = $request->file('thumbnail_image');
                 if ($file->isValid()) {
@@ -126,10 +161,9 @@ class ProductController extends Controller
                 }
             }
 
-            // Save gallery images
+            // 5. Save gallery images
             if ($request->hasFile('gallery_images')) {
-                $files = $request->file('gallery_images');
-                foreach ($files as $idx => $f) {
+                foreach ($request->file('gallery_images') as $idx => $f) {
                     if (!$f || !$f->isValid()) continue;
                     $path = $f->store('products', 'public');
                     ProductImage::create([
@@ -141,7 +175,7 @@ class ProductController extends Controller
                 }
             }
 
-            // Save tags (comma separated)
+            // 6. Save tags
             $tagsInput = $request->input('tags');
             if ($tagsInput) {
                 $parts = array_filter(array_map('trim', explode(',', $tagsInput)));
@@ -150,147 +184,130 @@ class ProductController extends Controller
                 }
             }
 
-            // Save variants if present
-            $variants = $request->input('variants', []);
-            if (is_array($variants) && count($variants) > 0) {
-                foreach ($variants as $v) {
-                    $sku = isset($v['sku']) && $v['sku'] !== '' ? $v['sku'] : Str::upper(Str::random(8));
-                    $basePrice = isset($v['price']) && $v['price'] !== '' ? (float) $v['price'] : 0;
-                    $stock = isset($v['stock']) && $v['stock'] !== '' ? intval($v['stock']) : 0;
+            // 7. Save variants (your existing logic)
+            $this->saveVariants($product, $request->input('variants', []));
 
-                    $values = isset($v['values']) && is_array($v['values']) ? $v['values'] : [];
+            DB::commit();
 
-                    // separate colour entries from other attribute mappings
-                    $colourEntries = [];
-                    $otherAttrMappings = [];
-                    foreach ($values as $attrId => $attrValueId) {
-                        if ($attrId === 'colour') {
-                            $colourEntries = is_array($attrValueId) ? $attrValueId : [$attrValueId];
-                        } else {
-                            $otherAttrMappings[$attrId] = $attrValueId;
-                        }
-                    }
+            flash()->success('Product created successfully');
+            return redirect()->route('admin.productslist');
 
-                    // Helper to normalise a colour entry into [value, priceDelta]
-                    $normalizeColour = function ($cv) {
-                        // possible forms supported:
-                        // - string colour name / hex ("red" or "#ff0000")
-                        // - string with pipe delim "#fff|2.5" (value|priceDelta)
-                        // - assoc array ['value'=>'red','price'=>2.5,'code'=>'#ff0000']
-                        $value = null;
-                        $price = null;
-                        $code = null;
-                        if (is_array($cv)) {
-                            $value = $cv['value'] ?? $cv['name'] ?? ($cv['color'] ?? null);
-                            // try code keys
-                            foreach (['code','hex','color_code','colour_code'] as $k) {
-                                if (!empty($cv[$k])) { $code = $cv[$k]; break; }
-                            }
-                            foreach (['price','price_delta','extra_price','cost','amount'] as $k) {
-                                if (isset($cv[$k])) { $price = $cv[$k]; break; }
-                            }
-                        } elseif (is_string($cv)) {
-                            if (strpos($cv, '|') !== false) {
-                                [$val, $p] = explode('|', $cv, 2);
-                                $value = trim($val);
-                                $price = is_numeric($p) ? (float) $p : null;
-                            } else {
-                                $value = $cv;
-                            }
-                        }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            flash()->error('Failed to save product: ' . $e->getMessage());
+            return redirect()->back()->withInput();
+        }
+    }
 
-                        // try to extract an inline hex code if value contains it (e.g. "Red #ff0000" or "#ff0000 Red")
-                        if ($value && preg_match('/(?P<hex>#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}))/i', $value, $m)) {
-                            $code = $m['hex'];
-                            // remove hex from value for cleaner stored name
-                            $value = trim(str_replace($m['hex'], '', $value));
-                        }
+    /**
+     * Handle product variants logic (kept your original logic cleanly)
+     */
+    private function saveVariants(Product $product, array $variants)
+    {
+        if (empty($variants)) return;
 
-                        return [trim((string) ($value ?? '')), $price !== null ? (float) $price : null, $code ? trim((string)$code) : null];
-                    };
+        foreach ($variants as $v) {
+            $sku = isset($v['sku']) && $v['sku'] !== '' ? $v['sku'] : Str::upper(Str::random(8));
+            $basePrice = isset($v['price']) && $v['price'] !== '' ? (float)$v['price'] : 0;
+            $stock = isset($v['stock']) && $v['stock'] !== '' ? intval($v['stock']) : 0;
 
-                    // If there are multiple colour entries and at least one has its own price,
-                    // create a separate variant for each colour (price = base + colour price).
-                    $anyColourHasPrice = false;
-                    foreach ($colourEntries as $ce) {
-                        [$_, $pd, $_c] = $normalizeColour($ce);
-                        if ($pd !== null) { $anyColourHasPrice = true; break; }
-                    }
-
-                    if (!empty($colourEntries) && $anyColourHasPrice) {
-                        // create one variant per colour
-                        foreach ($colourEntries as $ce) {
-                            [$colourVal, $priceDelta, $colourCode] = $normalizeColour($ce);
-                            $finalPrice = $basePrice + (is_numeric($priceDelta) ? (float) $priceDelta : 0);
-                            $variantModel = ProductVariant::create([
-                                'product_id' => $product->id,
-                                'sku' => $sku . '-' . Str::upper(substr(preg_replace('/[^A-Z0-9]/', '', (string)$colourVal),0,6)) . Str::upper(Str::random(3)),
-                                'price' => $finalPrice,
-                                'stock' => $stock,
-                                'color' => $colourVal !== '' ? $colourVal : null,
-                                'color_code' => $colourCode !== '' ? $colourCode : null,
-                            ]);
-
-                            // Note: colours are stored directly on the variant (color, color_code).
-                            // We intentionally do NOT create Attribute / AttributeValue entries for colours.
-
-                            // attach other attribute mappings to this new variant
-                            foreach ($otherAttrMappings as $oaId => $oaValue) {
-                                if (is_numeric($oaId)) {
-                                    $valueId = is_array($oaValue) ? (int) ($oaValue[0] ?? 0) : (int) $oaValue;
-                                    if ($valueId <= 0) continue;
-                                    ProductVariantValue::create([
-                                        'variant_id' => $variantModel->id,
-                                        'attribute_id' => intval($oaId),
-                                        'attribute_value_id' => $valueId,
-                                    ]);
-                                }
-                            }
-                        }
-                    } else {
-                        // No colour-specific prices: create a single variant and attach all mappings
-                        $variantModel = ProductVariant::create([
-                            'product_id' => $product->id,
-                            'sku' => $sku,
-                            'price' => $basePrice,
-                            'stock' => $stock,
-                        ]);
-
-                        // attach colour values (if any) and other attributes to the single variant
-                        if (!empty($colourEntries)) {
-                            // set primary colour on the variant (use first colour entry)
-                            [$firstColourVal, $firstPriceDelta, $firstColourCode] = $normalizeColour($colourEntries[0]);
-                            if ($firstColourVal !== '' || $firstColourCode !== null) {
-                                $variantModel->update([
-                                    'color' => $firstColourVal !== '' ? $firstColourVal : null,
-                                    'color_code' => $firstColourCode !== '' ? $firstColourCode : null,
-                                ]);
-                            }
-                            // For single-variant case we also do NOT create attribute entries for colours.
-                            // The chosen colours are recorded on the variant via 'color' and 'color_code'.
-                        }
-
-                        // other attributes
-                        foreach ($otherAttrMappings as $attrId => $attrValueId) {
-                            if (is_numeric($attrId)) {
-                                $valueId = is_array($attrValueId) ? (int) ($attrValueId[0] ?? 0) : (int) $attrValueId;
-                                if ($valueId <= 0) continue;
-                                ProductVariantValue::create([
-                                    'variant_id' => $variantModel->id,
-                                    'attribute_id' => intval($attrId),
-                                    'attribute_value_id' => $valueId,
-                                ]);
-                            }
-                        }
-                    }
+            $values = isset($v['values']) && is_array($v['values']) ? $v['values'] : [];
+            $colourEntries = [];
+            $otherAttrMappings = [];
+            foreach ($values as $attrId => $attrValueId) {
+                if ($attrId === 'colour') {
+                    $colourEntries = is_array($attrValueId) ? $attrValueId : [$attrValueId];
+                } else {
+                    $otherAttrMappings[$attrId] = $attrValueId;
                 }
             }
 
-            DB::commit();
-            return redirect()->route('admin.productslist')->with('success', 'Product created successfully');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withInput()->withErrors(['error' => 'Failed to save product: ' . $e->getMessage()]);
+            $normalizeColour = function ($cv) {
+                $value = $code = null;
+                $price = null;
+                if (is_array($cv)) {
+                    $value = $cv['value'] ?? $cv['name'] ?? ($cv['color'] ?? null);
+                    foreach (['code','hex','color_code','colour_code'] as $k) {
+                        if (!empty($cv[$k])) { $code = $cv[$k]; break; }
+                    }
+                    foreach (['price','price_delta','extra_price','cost','amount'] as $k) {
+                        if (isset($cv[$k])) { $price = $cv[$k]; break; }
+                    }
+                } elseif (is_string($cv)) {
+                    if (strpos($cv, '|') !== false) {
+                        [$val, $p] = explode('|', $cv, 2);
+                        $value = trim($val);
+                        $price = is_numeric($p) ? (float)$p : null;
+                    } else {
+                        $value = $cv;
+                    }
+                }
+                if ($value && preg_match('/(?P<hex>#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}))/i', $value, $m)) {
+                    $code = $m['hex'];
+                    $value = trim(str_replace($m['hex'], '', $value));
+                }
+                return [trim((string)($value ?? '')), $price !== null ? (float)$price : null, $code ? trim((string)$code) : null];
+            };
+
+            $anyColourHasPrice = false;
+            foreach ($colourEntries as $ce) {
+                [$_, $pd, $_c] = $normalizeColour($ce);
+                if ($pd !== null) { $anyColourHasPrice = true; break; }
+            }
+
+            if (!empty($colourEntries) && $anyColourHasPrice) {
+                foreach ($colourEntries as $ce) {
+                    [$colourVal, $priceDelta, $colourCode] = $normalizeColour($ce);
+                    $finalPrice = $basePrice + ($priceDelta ?: 0);
+                    $variantModel = ProductVariant::create([
+                        'product_id' => $product->id,
+                        'sku' => $sku . '-' . Str::upper(substr(preg_replace('/[^A-Z0-9]/', '', (string)$colourVal), 0, 6)) . Str::upper(Str::random(3)),
+                        'price' => $finalPrice,
+                        'stock' => $stock,
+                        'color' => $colourVal ?: null,
+                        'color_code' => $colourCode ?: null,
+                    ]);
+
+                    foreach ($otherAttrMappings as $oaId => $oaValue) {
+                        if (is_numeric($oaId)) {
+                            $valueId = is_array($oaValue) ? (int)($oaValue[0] ?? 0) : (int)$oaValue;
+                            if ($valueId <= 0) continue;
+                            ProductVariantValue::create([
+                                'variant_id' => $variantModel->id,
+                                'attribute_id' => intval($oaId),
+                                'attribute_value_id' => $valueId,
+                            ]);
+                        }
+                    }
+                }
+            } else {
+                $variantModel = ProductVariant::create([
+                    'product_id' => $product->id,
+                    'sku' => $sku,
+                    'price' => $basePrice,
+                    'stock' => $stock,
+                ]);
+
+                if (!empty($colourEntries)) {
+                    [$firstColourVal, $_, $firstColourCode] = $normalizeColour($colourEntries[0]);
+                    $variantModel->update([
+                        'color' => $firstColourVal ?: null,
+                        'color_code' => $firstColourCode ?: null,
+                    ]);
+                }
+
+                foreach ($otherAttrMappings as $attrId => $attrValueId) {
+                    if (is_numeric($attrId)) {
+                        $valueId = is_array($attrValueId) ? (int)($attrValueId[0] ?? 0) : (int)$attrValueId;
+                        if ($valueId <= 0) continue;
+                        ProductVariantValue::create([
+                            'variant_id' => $variantModel->id,
+                            'attribute_id' => intval($attrId),
+                            'attribute_value_id' => $valueId,
+                        ]);
+                    }
+                }
+            }
         }
     }
 }

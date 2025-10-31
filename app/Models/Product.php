@@ -45,6 +45,7 @@ class Product extends Model
         'shipping_days',
         'warranty_enabled',
         'warranty_duration',
+        'is_visible',
     ];
 
     protected $casts = [
@@ -65,6 +66,7 @@ class Product extends Model
         'warranty_enabled' => 'boolean',
         'low_stock_quantity' => 'integer',
         'shipping_days' => 'integer',
+        'is_visible' => 'boolean',
     ];
 
     // Relations

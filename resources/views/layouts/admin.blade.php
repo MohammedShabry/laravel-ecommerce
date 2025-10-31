@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="{{ asset('assetsbackend/js/vendors/color-modes.js') }}"></script>
     <link href="{{ asset('assetsbackend/css/main.css?v=6.0') }}" rel="stylesheet" type="text/css" />
+    
+    <!-- Toastr styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <style>
         /* When a modal is open add this class to the root to prevent underlying
            layout from receiving pointer events (stops hover/collapse on sidebar/header). */
@@ -56,6 +59,10 @@
     <script src="{{ asset('assetsbackend/js/vendors/chart.js') }}"></script>
     <script src="{{ asset('assetsbackend/js/main.js?v=6.0') }}"></script>
     <script src="{{ asset('assetsbackend/js/custom-chart.js') }}"></script>
+    
+    {{-- Toastr library (must load before Flasher plugin) --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    
     <script>
         // Ensure jQuery AJAX includes Laravel CSRF token if jQuery is present
         (function(){
@@ -67,6 +74,7 @@
             }
         })();
     </script>
+    
     @stack('scripts')
 </body>
 </html>

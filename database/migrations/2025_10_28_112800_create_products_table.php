@@ -31,7 +31,7 @@ return new class extends Migration
             $table->enum('flash_discount_type', ['flat','percent'])->nullable(); // Flash discount type
             $table->decimal('discount', 10, 2)->nullable(); // General discount
             $table->enum('discount_type', ['flat','percent'])->nullable(); // General discount type
-            $table->integer('low_stock_quantity')->default(0); // Low stock warning
+            $table->integer('low_stock_quantity')->nullable(); // Low stock warning
             $table->enum('stock_visibility', ['quantity','text_only','hidden'])->default('quantity'); // Stock visibility
             $table->dateTime('published_at')->nullable();
             $table->string('meta_title')->nullable(); // SEO meta title
@@ -46,6 +46,7 @@ return new class extends Migration
             $table->string('warranty_duration')->nullable();
             $table->timestamps(); // created_at & updated_at
             $table->softDeletes(); // soft delete support
+            $table->boolean('is_visible')->default(true);
         });
     }
 
